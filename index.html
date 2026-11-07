@@ -364,6 +364,17 @@
 
   </div>
 
+  <script>
+    // Çevrimdışı Okuma ve Sıfır Mobil Kota Motoru (Service Worker)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log('Offline okuma önbelleği aktif!'))
+          .catch((err) => console.log('SW hata:', err));
+      });
+    }
+  </script>
+
 </body>
 </html>
 
