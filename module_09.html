@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 09: Donanım Altyapısı: Oracle Cloud Ampere A1 (ARM64) Gücü</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_08.html" class="nav-link">⬅️ Modül 08: Ağ Seviyesi TLS / JA4</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_10.html" class="nav-link">Modül 10: Linux'ta Windows Simülasyonu ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part4">BÖLÜM IV: DONANIM, BULUT VE İŞLETİM SİSTEMİ</span>
+      <h1>Modül 09: Donanım Altyapısı: Oracle Cloud Ampere A1 (ARM64) Gücü</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        4 OCPU Ampere ARM işlemci, 24 GB RAM Always Free altyapısı, aarch64 mimarisinde Chromium derlemeleri ve Oracle Idle Reclaim politikasını kalıcı olarak aşma yöntemleri.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Oracle Cloud Always Free: Dünyanın En Güçlü Ücretsiz Donanımı</h2>
+    <p>
+      Bulut bilişim pazarında AWS, Google Cloud veya Azure gibi devler genellikle 1 çekirdek ve 1 GB RAM'lik minik sunucuları 12 ay için ücretsiz verir. Ancak <strong>Oracle Cloud Infrastructure (OCI)</strong>, piyasada eşi benzeri olmayan bir <em>Always Free (Ömür Boyu Ücretsiz)</em> paket sunmaktadır:
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🖥️ ORACLE CLOUD AMPERE A1 ALWAYS FREE ÖZELLİKLERİ</div>
+      <div class="ascii-art">
++--------------------------------------------------------------+
+| İŞLEMCİ    : 4 OCPU Ampere Altra ARM64 (Dedicated 4 vCPU)   |
+| BELLEK     : 24 GB LPDDR4x RAM (Takassız devasa önbellek)    |
+| DEPOLAMA   : 200 GB NVMe Disk (Yüksek IOPS, hızlı SQLite)   |
+| TRAFİK     : Aylık 10 TB Ücretsiz Çıkış Bandwidth'i         |
+| PİYASA FİY : Normal VPS'te ~80$/ay (4.000 TL/ay)             |
+| BİZİM GİDER: 0 TL (ÖMÜR BOYU HER AY ÜCRETSİZ!)               |
++--------------------------------------------------------------+
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. x86_64 vs. ARM64 (aarch64) Mimarisi ve Chromium</h2>
+    <p>
+      Geleneksel Intel/AMD sunucuları x86 mimarisi kullanırken, Ampere işlemcileri Apple Silicon (M1/M2/M3) gibi <strong>ARM64 (aarch64)</strong> mimarisine sahiptir.
+    </p>
+    <ul>
+      <li>
+        <strong>Daha Düşük Isı ve Yüksek Verimlilik:</strong> ARM çekirdekleri, web sayfalarının JavaScript motoru (V8) için optimize edilmiştir.
+      </li>
+      <li>
+        <strong>Chromium Uyumluluğu:</strong> Ubuntu 22.04 veya 24.04 ARM64 üzerine Playwright kurduğunuzda, Playwright resmi Chromium ARM64 binary'sini sorunsuz indirir:
+        <pre><code># Ubuntu ARM64 üzerinde kurulum:
+sudo apt update && sudo apt install -y python3-pip chromium-browser
+pip3 install playwright
+playwright install chromium
+<span class="code-badge">BASH TERMINAL</span></code></pre>
+      </li>
+      <li>
+        <strong>Önemli Fark:</strong> Derlenmiş Go binary'leri veya harici araçlar kullanılırken <code>GOARCH=arm64</code> bayrağıyla derlenmelidir.
+      </li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. Oracle "Idle Reclaim" (Sunucu Geri Alma) Politikasını Aşmak</h2>
+    <p>
+      Oracle, Always Free kullanıcılarının makinelerini boşta bırakmasını engellemek için bir kural koymuştur: <em>"Eğer bir sunucunun CPU kullanımı 7 gün boyunca %10'un altındaysa ve bellek kullanımı <%10 ise, sunucu durdurulabilir veya geri alınabilir."</em>
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🛡️ Çerez Çiftliği ile Otomatik Dokunulmazlık</div>
+      <p>
+        Bizim çerez çiftliği sistemimiz 7/24 arka planda headless tarayıcılar çalıştıracağı ve siteleri gezeceği için, <strong>CPU kullanımımız doğal olarak %25 ila %45 arasında dalgalanacaktır</strong>. 
+        Böylece Oracle sunucunuzu sistem metriklerinde "aşırı aktif ve üretken" bir makine olarak görür ve makineniz <strong>ömür boyu tamamen güvende kalır</strong>, asla geri alınamaz!
+      </p>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Ubuntu ARM64 Kernel ve Sistem Optimizasyonları</h2>
+    <p>
+      24 GB RAM'i 40-50 eşzamanlı çerez işçisine (worker) paylaştırırken Linux çekirdeğinin kilitlenmemesi için `sysctl.conf` ve dosya sınırları optimize edilmelidir:
+    </p>
+
+    <pre><code># /etc/security/limits.conf dosyasına ekleyin (Dosya tanıtıcı limitlerini açın):
+* soft nofile 65535
+* hard nofile 65535
+root soft nofile 65535
+root hard nofile 65535
+
+# /etc/sysctl.conf dosyasına ekleyin (Ağ ve bellek ayarları):
+vm.swappiness=10
+net.core.somaxconn=4096
+net.ipv4.tcp_max_syn_backlog=4096
+net.ipv4.ip_local_port_range=1024 65535
+fs.file-max=2097152
+
+# Ayarları aktif edin:
+sudo sysctl -p
+<span class="code-badge">LINUX KERNEL TUNING</span></code></pre>
+
+    <!-- Section 5 -->
+    <h2>5. Kapasite Dağılımı: 24 GB RAM ile Kaç Worker Çalışır?</h2>
+    <p>
+      Bellek tüketimini milimetrik olarak hesaplayalım:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Bileşen</th>
+            <th>Birim RAM Tüketimi</th>
+            <th>Toplam Tüketim (40 Worker)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ubuntu 24.04 ARM64 OS</strong></td>
+            <td>350 MB</td>
+            <td>350 MB</td>
+          </tr>
+          <tr>
+            <td><strong>MongoDB Veritabanı</strong></td>
+            <td>1.5 GB (WiredTiger cache)</td>
+            <td>1.5 GB</td>
+          </tr>
+          <tr>
+            <td><strong>Medya Filtreli Chromium Worker</strong></td>
+            <td>~180 MB</td>
+            <td>40 x 180 MB = <strong>7.2 GB</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Go TLS Proxy & HTTP/2 Swarm</strong></td>
+            <td>~80 MB</td>
+            <td>80 MB</td>
+          </tr>
+          <tr>
+            <td><strong>Boşta Kalan Güvenli Bellek</strong></td>
+            <td>-</td>
+            <td><strong>~14.8 GB (Tamamen Güvenli Rezerv!)</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Görüldüğü gibi, 24 GB RAM sayesinde sunucumuz 40 eşzamanlı worker'ı çalıştırırken bile belleğinin sadece üçte birini kullanır; hiçbir bellek şişmesi (OOM killer) veya takılma yaşanmaz.
+    </p>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_08.html" class="nav-link">⬅️ Modül 08: Ağ Seviyesi TLS / JA4</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_10.html" class="nav-link">Modül 10: Linux'ta Windows Simülasyonu ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 09 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

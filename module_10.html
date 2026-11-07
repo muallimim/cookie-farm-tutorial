@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 10: Linux Üzerinde Windows 11 Parmak İzi İnşası</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_09.html" class="nav-link">⬅️ Modül 09: Oracle Cloud Donanımı</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_11.html" class="nav-link">Modül 11: Proxy Stratejileri 1 ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part4">BÖLÜM IV: DONANIM, BULUT VE İŞLETİM SİSTEMİ</span>
+      <h1>Modül 10: Linux Üzerinde "Windows 11 Tüketici Parmak İzi" İnşası</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Linux font sızıntılarını engelleme, msttcorefonts kurulumu, Xvfb ile sanal ekran açma, WebGL ANGLE spoofing ve production-ready Dockerfile mimarisi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Çıplak Linux Tuzağı: Neden Doğrudan Başlatılamaz?</h2>
+    <p>
+      Eğer Ubuntu üzerinde hiçbir özel ayar yapmadan `playwright.chromium.launch()` derseniz, Google ve Cloudflare sayfaya gömdüğü 3 satırlık JavaScript testiyle sunucunuzun Linux olduğunu anlar:
+    </p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🚨 Linux'un Kendini Ele Verdiği 3 Nokta</div>
+      <ol style="margin-bottom: 0;">
+        <li><strong>Font Eksikliği:</strong> Linux'ta `Segoe UI`, `Arial`, `Calibri` veya `Tahoma` yoktur (Ubuntu fontları vardır). Sayfa bu fontların genişliğini (`measureText()`) ölçtüğünde piksel farkı çıkar.</li>
+        <li><strong>WebGL Renderer:</strong> Linux'ta `Mesa / Gallium / LLVMpipe` döner; oysa Windows'ta `ANGLE (NVIDIA / Intel Direct3D11)` dönmelidir.</li>
+        <li><strong>Navigator Platform:</strong> `navigator.platform = "Linux aarch64"` döner.</li>
+      </ol>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Çözüm 1: Windows Fontlarının Linux'a Enjeksiyonu</h2>
+    <p>
+      Sunucumuzun Canvas ve font ölçümlerinde tıpkı bir Windows bilgisayar gibi yanıt vermesi için Microsoft font kütüphanesini kuruyoruz:
+    </p>
+
+    <pre><code># Ubuntu terminalinde çalıştırın:
+sudo apt update
+sudo apt install -y ttf-mscorefonts-installer fontconfig
+
+# Windows 11 sistem fontlarını (Segoe UI vb.) kopyalamak için:
+sudo mkdir -p /usr/share/fonts/truetype/win11
+# Windows 11 C:\Windows\Fonts içerisindeki seg*.ttf ve arial*.ttf dosyaları buraya atılır.
+sudo fc-cache -f -v
+<span class="code-badge">BASH TERMINAL</span></code></pre>
+
+    <!-- Section 3 -->
+    <h2>3. Çözüm 2: Xvfb ile Monitörsüz Sanal Ekran (Headful Simülasyonu)</h2>
+    <p>
+      Her ne kadar `headless="new"` modu çok başarılı olsa da, bazı gelişmiş korumalar (DataDome, Akamai) ekran kartı pencere yöneticisini (Window Manager) denetler. 
+      <strong>Xvfb (X Virtual Framebuffer)</strong>, bellekte tamamen sanal bir 1920x1080 ekran oluşturur. Tarayıcı kendini gerçek bir monitöre bağlı sanır ama fiziksel ekran kartı kullanılmaz:
+    </p>
+
+    <pre><code># Xvfb kurulumu:
+sudo apt install -y xvfb
+
+# Sanal ekranı arka planda 99 numaralı display'de başlatın:
+Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp &
+export DISPLAY=:99
+
+# Artık Playwright "headless=False" modunda çalıştırılsa bile 
+# arka planda sanal ekranda sıfır pencere ile çalışır!
+<span class="code-badge">LINUX VIRTUAL DISPLAY</span></code></pre>
+
+    <!-- Section 4 -->
+    <h2>4. Çözüm 3: WebGL ANGLE ve Donanım Spoofing Kodu</h2>
+    <p>
+      Playwright başlatılırken tarayıcı bağlamına (context) Windows kimliği mühürlenir:
+    </p>
+
+    <pre><code>import asyncio
+from playwright.async_api import async_playwright
+
+async def launch_stealth_windows_context(p):
+    browser = await p.chromium.launch(
+        headless=True,
+        args=[
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-blink-features=AutomationControlled", # Webdriver bayrağını siler
+            "--use-angle=d3d11",                            # DirectX simülasyonu
+            "--window-size=1920,1080",
+        ]
+    )
+    
+    # Windows 11 Tüketici Context'i oluştur:
+    context = await browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        viewport={"width": 1920, "height": 1080},
+        locale="tr-TR",
+        timezone_id="Europe/Istanbul",
+        device_scale_factor=1,
+    )
+    
+    # WebGL ve Donanım Sahteciliği (Init Script):
+    await context.add_init_script("""
+        // 1. Webdriver izini tamamen sil
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        
+        // 2. W3C Standartlarına uygun 8 GiB bellek
+        Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+        Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+        
+        // 3. Platform bilgisi
+        Object.defineProperty(navigator, 'platform', { get: () => 'Win32' });
+    """)
+    
+    return browser, context
+<span class="code-badge">PYTHON 3.12 / PLAYWRIGHT STEALTH</span></code></pre>
+
+    <!-- Section 5 -->
+    <h2>5. Tek Tıkla Kurulum: Production `Dockerfile`</h2>
+    <p>
+      Oracle sunucunuzda tüm bu ortamı tek bir komutla ayağa kaldıran Docker konfigürasyonu:
+    </p>
+
+    <pre><code>FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip python3-venv \
+    xvfb ttf-mscorefonts-installer fontconfig \
+    chromium-browser libgl1-mesa-glx \
+    curl git && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY requirements.txt .
+RUN python3 -m venv /venv && /venv/bin/pip install --upgrade pip && /venv/bin/pip install -r requirements.txt
+RUN /venv/bin/playwright install chromium
+
+COPY . .
+
+# Xvfb sanal ekranı başlatıp python worker'ı çalıştır
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1920x1080x24 & export DISPLAY=:99 && /venv/bin/python worker_daemon.py"]
+<span class="code-badge">DOCKERFILE (ARM64 READY)</span></code></pre>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_09.html" class="nav-link">⬅️ Modül 09: Oracle Cloud Donanımı</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_11.html" class="nav-link">Modül 11: Proxy Stratejileri 1 ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 10 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

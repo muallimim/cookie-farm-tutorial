@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 04: Google Ekosisteminin Çekirdek Çerezleri ve İmzaları</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_03.html" class="nav-link">⬅️ Modül 03: Çerez Pazarı ve Alıcılar</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_05.html" class="nav-link">Modül 05: Çerez Formatları & Depolama ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part2">BÖLÜM II: TEKNİK DERİNLİK VE GOOGLE SIRLARI</span>
+      <h1>Modül 04: Google Ekosisteminin Çekirdek Çerezleri ve İmzaları</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        NID, AEC, SOCS, CONSENT, 1P_JAR ve __Secure-ENID çerezlerinin çalışma mekanizmaları, GA4 (_ga, _gid)
+        entegrasyonu ve YouTube/Google News sinerjisi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Google'ın Gizli Silahı: Neden Tek Bir Çerez Yetmez?</h2>
+    <p>
+      Birçok acemi bot geliştiricisi, Google'ın tarayıcıları yalnızca IP adresine veya tek bir rastgele kimliğe göre
+      tanıdığını zanneder. Oysa Google, kullanıcıları tespit etmek ve güven derecesini ölçmek için <strong>çapraz bağlı
+        (cross-referenced) bir çerez takımyıldızı</strong> kullanır.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🌌 GOOGLE ÇEREZ TAKIMYILDIZI VE ETKİLEŞİM AĞI</div>
+      <div class="ascii-art">
+        +-------------------+
+        | .google.com (SERP)|
+        +---------┬---------+
+        │
+        ┌───────────────────────┼───────────────────────┐
+        ▼ ▼ ▼
+        [NID / __Secure-ENID] [AEC] [SOCS / CONSENT]
+        (Profil & Tercihler) (Anti-Bot Kalkanı) (Yasal Onay/Rıza)
+        │ │ │
+        └───────────────────────┼───────────────────────┘
+        │
+        ▼
+        +--------------------------------+
+        | .doubleclick.net / GA4 |
+        | (1P_JAR, IDE, _ga, _gid, _gat) |
+        +---------------┬----------------+
+        │
+        ▼
+        [YOUTUBE & GOOGLE NEWS]
+        (SOCS, PREF, VISITOR_INFO1_LIVE)
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Çekirdek Google Arama Çerezleri ve Fonksiyonları</h2>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Çerez Adı</th>
+            <th>Atandığı Domain</th>
+            <th>Ömrü</th>
+            <th>Teknik Görevi ve Önemi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>NID</code></td>
+            <td><code>.google.com</code></td>
+            <td>6 Ay</td>
+            <td>Google'ın en eski ve en kritik kimlik çerezidir. Tercihleri (dil, safe-search) ve arama geçmişi
+              oturumunu saklar. Değeri şifreli bir ikili formattır (`NID=511=...`). Yoksa kullanıcı her aramada sıfır
+              muamelesi görür.</td>
+          </tr>
+          <tr>
+            <td><code>AEC</code></td>
+            <td><code>.google.com</code></td>
+            <td>6 Ay</td>
+            <td><strong>Anti-Abuse / Sahtecilik Koruması:</strong> 2022'de devreye giren bu çerez, istemcinin arka
+              plandaki TLS handshake ve tarayıcı özelliklerini kriptografik olarak doğrular. AEC çerezi bulunmayan veya
+              geçersiz olan istekler derhal CAPTCHA'ya yönlendirilir.</td>
+          </tr>
+          <tr>
+            <td><code>SOCS</code></td>
+            <td><code>.google.com</code></td>
+            <td>13 Ay</td>
+            <td><strong>Consent / Çerez İzni:</strong> Avrupa Birliği ve Türkiye regülasyonları gereği çıkan "Tümünü
+              Kabul Et" butonuna basıldığında atanır. Bu çerez yoksa Google her ziyarette tam ekran modal banner açar ve
+              botun tıklama akışını felç eder!</td>
+          </tr>
+          <tr>
+            <td><code>1P_JAR</code></td>
+            <td><code>.google.com</code></td>
+            <td>30 Gün</td>
+            <td>Google reklamlarının dönüştürülmesini ve kullanıcı ilgi alanlarını izler. Kullanıcının son 30 gün içinde
+              hangi Google mülklerinde gezindiğinin tarihsel izidir.</td>
+          </tr>
+          <tr>
+            <td><code>__Secure-ENID</code></td>
+            <td><code>.google.com</code></td>
+            <td>13 Ay</td>
+            <td>Modern HTTPS Google mülklerinde çalışan şifreli oturum çerezidir. Yalnızca HTTPS üzerinde (`Secure`)
+              taşınır ve NID ile çapraz doğrulanır.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. Google Analytics (GA4) Çerezleri: Bir Hit Botunun Can Damarı</h2>
+    <p>
+      Bir SEO ajansı veya webmaster sizden çerez satın aldığında, amacı hedef web sitesine tıklayıp Google Analytics'te
+      <strong>"Organik Ziyaretçi"</strong> olarak görünmektir.
+    </p>
+
+    <ul>
+      <li>
+        <strong><code>_ga</code> Çerezi:</strong> Google Analytics'in ana istemci kimliğidir (`client_id`). Örnek değer:
+        <code>GA1.1.1894238592.1731005000</code>. Bu değerin son parçası (`1731005000`) çerezin oluşturulduğu ilk tarihi
+        belirler. Isıtılmış bir profilde bu tarih eski olmalıdır!
+      </li>
+      <li>
+        <strong><code>_ga_&lt;CONTAINER-ID&gt;</code> Çerezi:</strong> GA4'ün o spesifik sitedeki oturum durumunu
+        (`session_id`, `engagement_time`, `session_number`) tutar.
+      </li>
+      <li>
+        <strong><code>_gid</code> Çerezi:</strong> 24 saatlik oturum tekilleştirme anahtarıdır.
+      </li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Kritik SEO Kuralı: GA4 Qualified Session Şartı</div>
+      <p>
+        Google Analytics 4, bir oturumu "Nitelikli Ziyaret" (Qualified Session) saymak için şu 3 şarttan en az birini
+        arar:
+      </p>
+      <ol style="margin-bottom: 0;">
+        <li>Sitede kesintisiz en az <strong>10 saniye</strong> kalmak (Dwell Time).</li>
+        <li>En az <strong>2 sayfa</strong> gezmek.</li>
+        <li>Bir dönüşüm (conversion) etkinliği tetiklemek.</li>
+      </ol>
+      <p style="margin-top: 0.8rem; margin-bottom: 0;">
+        Bizim ürettiğimiz çerezler, daha önce gezdiği sitelerde bu GA4 etkinliklerini (`page_view`, `user_engagement`)
+        tetiklemiş olarak kaydedildiği için hedef siteye girdiğinde Google tarafından <strong>en üst güven
+          sınıfında</strong> karşılanır.
+      </p>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. YouTube ve Google News Sinerjisi (Güven Katlama Formülü)</h2>
+    <p>
+      Google algoritmaları kendi mülklerine (YouTube, Google News, Google Haritalar) ayrıcalıklı bir güven duyar:
+    </p>
+    <ul>
+      <li>
+        <strong>YouTube Ziyareti:</strong> Bir profil ısıtılırken `youtube.com`'a uğrayıp 1 adet videoyu 10 saniye
+        oynattığında; `VISITOR_INFO1_LIVE`, `PREF` ve `YSC` çerezleri atanır. Google, YouTube'da video izlemiş bir
+        profilin bot olma ihtimalini matematiksel olarak %90 düşürür!
+      </li>
+      <li>
+        <strong>Google News Ziyareti:</strong> `news.google.com` üzerinde yerel haber başlıklarına tıklanması, profile
+        organik bir Türk internet kullanıcısı kimliği kazandırır.
+      </li>
+    </ul>
+
+    <div class="callout callout-success">
+      <div class="callout-title">💡 Çiftlik Mühendisliği İpucu</div>
+      <p>
+        Çerez çiftliğinde bir profili sadece haber sitelerinde gezdirmek yerine, <strong>gezinme rotasının %20'sini
+          mutlaka YouTube ve Google News'e ayırmak</strong>, o çerezin piyasa değerini ve dayanıklılığını 3 kat artırır.
+      </p>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_03.html" class="nav-link">⬅️ Modül 03: Çerez Pazarı ve Alıcılar</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_05.html" class="nav-link">Modül 05: Çerez Formatları & Depolama ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 04 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+
+</html>

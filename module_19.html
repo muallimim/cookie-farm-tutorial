@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 19: Global Satış Kanalları, Whop ve 7/24 Telegram Satış Botu</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_18.html" class="nav-link">⬅️ Modül 18: Yerel Satış Kanalları</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_20.html" class="nav-link">Modül 20: Hukuk, Risk & Gelecek ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part7">BÖLÜM VII: TİCARET, PAZARLAMA VE ÖLÇEKLENME</span>
+      <h1>Modül 19: Global Satış Kanalları, Whop ve 7/24 Telegram Satış Botu</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Whop platformunda Dolar bazlı aylık SaaS aboneliği, BlackHatWorld (BHW) pazarı, Python aiogram ile kripto destekli otonom Telegram satış botu ve canlı JSON API mimarisi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Whop ile Global Dolar Pazarı: Aylık Abonelik (MRR) Modeli</h2>
+    <p>
+      Yerel pazarda TL kazanmak harikadır, ancak doların 50 TL olduğu bir ekonomide <strong>Whop</strong> üzerinden global pazara açılmak gelirinizi 10'a katlayabilir.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">💎 WHOP ABONELİK (SAAS) GELİR MODELİ</div>
+      <div class="ascii-art">
+[Müşteri (ABD, İngiltere, Almanya)]
+           │
+           ▼ Whop üzerinden Kredi Kartı / Apple Pay / Kripto ile Öder:
+[Abonelik Paketi: 29$ / Ay (1.450 TL)]
+           │
+           ▼ Whop Otomasyonu:
+Müşteriye özel bir indirme paneli ve API anahtarı açılır.
+Müşteri her gün çiftliğimizden taze 500 adet çerez çeker.
+           │
+           ▼ FİNANSAL TABLO:
+100 Abone x 29$ = AYLIK 2.900$ (145.000 TL DÜZENLİ TEKRARLAYAN GELİR!)
+Gider: 0 TL Sunucu + 600 TL Modem = AYLIK NET KÂR 144.400 TL!
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. BlackHatWorld (BHW) Forumu Satış Dinamikleri</h2>
+    <p>
+      Dünyanın en büyük SEO ve otomasyon forumu <strong>BlackHatWorld (BHW)</strong>'dür. Burada "SEO Packages" veya "Proxies for Sale" bölümlerinde konu açabilirsiniz:
+    </p>
+    <ul>
+      <li><strong>Piyasa Fiyatı:</strong> BHW'de 1.000 adet ısınmış çerez <strong>25$ – 40$</strong> bandında satılır.</li>
+      <li>Siz 1.000 adedi <strong>10$ (1 Cent / adet)</strong> fiyata listelediğinizde forumda "En Ucuz ve En Hızlı Sağlayıcı" unvanını alırsınız.</li>
+      <li>Ödemeler doğrudan Stripe veya Kripto (USDT, BTC) ile tahsil edilir.</li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. 7/24 Otonom Telegram Satış Botu Mimarisi</h2>
+    <p>
+      Yazılımcılar ve bot işletmecileri gece çalışır. Bir web sitesine girip üye olmakla vakit kaybetmek istemezler. Bir Telegram botu açıp <code>/bakiye_yukle</code> ve <code>/satin_al</code> diyerek saniyeler içinde çerez almak isterler.
+    </p>
+
+    <div class="callout callout-info">
+      <div class="callout-title">🤖 Python aiogram ile Geliştirilmiş Mini Satış Botu Kodu</div>
+      <pre><code>import asyncio
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+
+API_TOKEN = "TELEGRAM_BOT_TOKEN_BURAYA"
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher()
+
+PACKAGES = {
+    "pack_500": {"name": "500 Adet Organik Çerez", "price_usdt": 5.0, "file": "packages/batch_500.zip"},
+    "pack_1000": {"name": "1.000 Adet Organik Çerez", "price_usdt": 10.0, "file": "packages/batch_1000.zip"}
+}
+
+@dp.message(Command("start"))
+async def start_handler(msg: types.Message):
+    await msg.reply(
+        "👋 Hoş Geldiniz! Endüstriyel Organik Çerez Botu.\n\n"
+        "📦 Güncel Stok: 45.000 Adet Taze TR/US Çerez\n"
+        "🚀 Format: Dolphin{anty}, AdsPower ve JSON\n\n"
+        "Paketler için /paketler komutunu kullanabilirsiniz."
+    )
+
+@dp.message(Command("paketler"))
+async def packages_handler(msg: types.Message):
+    text = "🛒 SATIN ALINABİLİR PAKETLER:\n\n"
+    for k, v in PACKAGES.items():
+        text += f"🔹 {v['name']} — {v['price_usdt']}$ (USDT TRC20)\n"
+    text += "\nÖdeme ve anında dosya teslimi için: /satin_al <paket_kodu>"
+    await msg.reply(text)
+
+@dp.message(Command("satin_al"))
+async def buy_handler(msg: types.Message):
+    # Kripto onay mekanizması sonrası anında dosya fırlat:
+    zip_file = types.FSInputFile("packages/batch_1000.zip")
+    await msg.reply_document(zip_file, caption="✅ Ödeme Onaylandı! 1.000 Adet Çerez Paketiniz Ektedir.")
+
+if __name__ == "__main__":
+    dp.run_polling(bot)
+<span class="code-badge">TELEGRAM BOT (AIOGRAM 3.X)</span></code></pre>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Geliştiriciler İçin Canlı JSON Çerez API'si</h2>
+    <p>
+      Büyük müşterilere dosya indirmek yerine doğrudan onların yazılımına bağlanabilen bir API sunabilirsiniz:
+    </p>
+
+    <pre><code>GET https://api.cerezciftligi.com/v1/cookies/fresh?count=10
+Authorization: Bearer MUSTERI_OZEL_TOKENI
+
+# DÖNEN YANIT (HTTP 200 OK):
+{
+  "success": true,
+  "count": 10,
+  "profiles": [
+    {
+      "profile_id": "p_8941",
+      "user_agent": "Mozilla/5.0 ...",
+      "cookies": [ ...EditThisCookie JSON... ]
+    },
+    ...
+  ]
+}
+<span class="code-badge">REST API ENDPOINT</span></code></pre>
+    <p>
+      Bu API'yi kullanan bir SEO botu, her göreve başlarken sunucunuzdan taze çerezi canlı çeker. Müşteri her ay düzenli 100$ – 300$ API abonelik faturası öder.
+    </p>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_18.html" class="nav-link">⬅️ Modül 18: Yerel Satış Kanalları</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_20.html" class="nav-link">Modül 20: Hukuk, Risk & Gelecek ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 19 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

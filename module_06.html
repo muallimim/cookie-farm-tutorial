@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 06: Anti-Bot Savunma Sistemleri ve Trust-Score Algoritmaları</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_05.html" class="nav-link">⬅️ Modül 05: Çerez Formatları & Depolama</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_07.html" class="nav-link">Modül 07: Dijital Parmak İzi Uyumu ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part2">BÖLÜM II: TEKNİK DERİNLİK VE GOOGLE SIRLARI</span>
+      <h1>Modül 06: Anti-Bot Savunma Sistemleri ve Trust-Score Algoritmaları</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Google reCAPTCHA v3 / Enterprise puanlama mantığı, Cloudflare Turnstile cf_clearance anatomisi, DataDome/Akamai savunma kalkanları ve çerez dinlendirme (curing) protokolü.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Anti-Bot Savunma Katmanlarının Evrimi</h2>
+    <p>
+      Eski internette bot koruması basitti: Kullanıcıya yamuk yumuk harflerden oluşan bir resim (reCAPTCHA v1/v2) gösterilir ve çözmesi istenirdi. Ancak modern web'de kullanıcı deneyimini bozmamak için <strong>Görünmez (Invisible / Score-Based)</strong> anti-bot sistemleri standart hale gelmiştir.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🛡️ MODERN ANTİ-BOT FİLTRELEME PİRAMİDİ</div>
+      <div class="ascii-art">
+           [ HEDEF SAYFA / SERP ]
+                     ▲
+                     │ Skor >= 0.7 İse Onay
+           +--------------------+
+           | 4. KATMAN:         |
+           | reCAPTCHA v3/Score | <── [Çerezler & Geçmiş Analizi]
+           +--------------------+
+                     ▲
+                     │ DOM & JS Testi Geçildi
+           +--------------------+
+           | 3. KATMAN:         |
+           | Browser/DOM Check  | <── [Canvas, WebGL, AudioContext]
+           +--------------------+
+                     ▲
+                     │ TLS / HTTP/2 Tutarlı
+           +--------------------+
+           | 2. KATMAN:         |
+           | Ağ & TLS Handshake | <── [JA3 / JA4 Parmak İzi]
+           +--------------------+
+                     ▲
+                     │ Temiz IP / Residential
+           +--------------------+
+           | 1. KATMAN:         |
+           | IP İtibarı (ASN)   | <── [Mobil / Konut IP]
+           +--------------------+
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Google reCAPTCHA v3 / Enterprise Skorlama Mekanizması</h2>
+    <p>
+      reCAPTCHA v3, kullanıcıya hiçbir soru sormaz. Sayfanın arkasında sessizce çalışan bir JavaScript kütüphanesidir (`api.js`). Kullanıcı sayfada gezinirken veya form gönderirken `grecaptcha.execute()` fonksiyonu çağrılır ve Google sunucularına bir şifreli telemetry paketi gider.
+    </p>
+    <p>
+      Google, istemciye <strong>0.0 ile 1.0 arasında bir skor</strong> döndürür:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>reCAPTCHA v3 Skoru</th>
+            <th>Algoritmanın Kararı</th>
+            <th>Çerez Durumu</th>
+            <th>Sonuç</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>0.1 – 0.3</strong></td>
+            <td>Kesin Bot / Saldırgan</td>
+            <td>Sıfır çerez veya tutarsız parmak izi</td>
+            <td>İstek sessizce engellenir, form düşürülür veya hard CAPTCHA çıkar.</td>
+          </tr>
+          <tr>
+            <td><strong>0.4 – 0.6</strong></td>
+            <td>Şüpheli Kullanıcı</td>
+            <td>Az çerez, taze IP, şüpheli gezinme hızı</td>
+            <td>İkincil doğrulama (SMS, e-posta veya görsel bulmaca) tetiklenir.</td>
+          </tr>
+          <tr>
+            <td><strong>0.7 – 0.9</strong></td>
+            <td><strong>Kesin Gerçek İnsan</strong></td>
+            <td><strong>Zengin çerez geçmişi + AEC + NID + Doğal gecikme</strong></td>
+            <td><strong>Doğrudan onay; işlem kesintisiz gerçekleşir.</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-title">💎 Satış Gücü: "0.9 Skor Garantili Çerez"</div>
+      <p>
+        Piyasada müşterilere <em>"Bu çerezler reCAPTCHA v3 testinde 0.9 insan skoru almaktadır"</em> diyebilmek, ürününüzün fiyatını 2 katına çıkarmanızı sağlar. Çünkü SEO ajanslarının en büyük kabusu botlarının 0.1 skor alıp hedef siteye trafik yazdıramamasıdır.
+      </p>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. Cloudflare Turnstile ve `cf_clearance` Çerezinin Anatomisi</h2>
+    <p>
+      Cloudflare Turnstile, reCAPTCHA'nın en büyük rakibidir. Bir siteye girdiğinizde 2 saniye dönen o küçük kutucuk aslında arkada yüzlerce JavaScript testi çalıştırır.
+    </p>
+    <ul>
+      <li>Eğer tarayıcı testi geçerse, Cloudflare sunucusu <strong>`cf_clearance`</strong> adında şifreli bir çerez atar.</li>
+      <li>Bu çerez genellikle <strong>30 dakika ila 2 saat</strong> geçerlidir.</li>
+      <li>Bu süre boyunca o siteye yapacağınız sonraki tüm istekler hiçbir güvenlik duvarına takılmadan doğrudan sunucuya ulaşır.</li>
+    </ul>
+
+    <!-- Section 4 -->
+    <h2>4. DataDome ve Akamai: Yerel Depolama (Storage) Denetimleri</h2>
+    <p>
+      E-ticaret ve bilet sitelerini koruyan DataDome ve Akamai gibi kurumsal anti-botlar, sadece çerezlere bakmaz; tarayıcının diğer depolama alanlarını da tarar:
+    </p>
+    <ul>
+      <li><code>localStorage</code> ve <code>sessionStorage</code> anahtarları.</li>
+      <li><code>IndexedDB</code> veritabanları (örneğin Google Docs veya modern web app'lerin bıraktığı yerel izler).</li>
+      <li>Service Worker kayıtları.</li>
+    </ul>
+    <p>
+      Bizim çerez çiftliğinde Playwright ile siteleri gezdirdiğimizde, bu depolama alanları da doğal olarak dolar ve profilin gerçekçiliği kusursuz hale gelir.
+    </p>
+
+    <!-- Section 5 -->
+    <h2>5. Çerez Dinlendirme ve Kürleme (Curing / Aging) Protokolü</h2>
+    <p>
+      Endüstriyel çerez çiftliğimizde uygulayacağımız altın kural: <strong>"Bugün üretilen çerezi bugün satma!"</strong>
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⏳ 3 AŞAMALI ÇEREZ KÜRLEME (CURING) PROTOKOLÜ</div>
+      <div class="ascii-art">
+[GÜN 1: Doğum & Gezinme] ──> Playwright + curl_cffi ile 15 site gezilir.
+                            Çerez boyutu 50 KB'a ulaşır.
+                                  │
+                                  ▼
+[GÜN 2-4: Soğuk Dinlenme] ─> Profil disk deposunda bekletilir.
+                            İstek atılmaz, zaman damgası olgunlaşır.
+                                  │
+                                  ▼
+[GÜN 5: Uyandırma & Test] ─> Profil 10 saniye ayağa kaldırılır.
+                            reCAPTCHA v3 skoru ölçülür (0.9 teyit).
+                                  │
+                                  ▼
+[GÜN 6: Satış ve Teslimat] ─> %100 Organik "Aged Cookie" etiketiyle
+                            müşteriye otomatik teslim edilir!
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_05.html" class="nav-link">⬅️ Modül 05: Çerez Formatları & Depolama</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_07.html" class="nav-link">Modül 07: Dijital Parmak İzi Uyumu ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 06 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

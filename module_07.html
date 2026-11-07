@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 07: Çerez ve Dijital Parmak İzi (Fingerprint) Tutarlılığı</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_06.html" class="nav-link">⬅️ Modül 06: Anti-Bot & Trust-Score</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_08.html" class="nav-link">Modül 08: Ağ Seviyesi TLS / JA4 ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part3">BÖLÜM III: DİJİTAL PARMAK İZİ VE AĞ KATMANI</span>
+      <h1>Modül 07: Çerez ve Dijital Parmak İzi (Fingerprint) Tutarlılığı</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Ölümcül uyuşmazlık sendromu, Client Hints (Sec-CH-UA) mimarisi, W3C 8 GiB bellek kuralı, WebGL ANGLE spoofing ve profile_meta.json paketi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Ölümcül Uyuşmazlık (Mismatched Fingerprint) Nedir?</h2>
+    <p>
+      Piyasadaki acemi çerez satıcılarının müşterilerinden sürekli <em>"Gönderdiğin çerezler 1 saatte patladı, hepsi banlandı!"</em> şikayeti almasının 1 numaralı sebebi <strong>Parmak İzi Uyuşmazlığıdır</strong>.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">💥 ÖLÜMCÜL PARMAK İZİ UYUŞMAZLIĞI SENARYOSU</div>
+      <div class="ascii-art">
+[ÜRETİM AŞAMASI (SİZ)]
+Tarayıcı: Windows 11 Chrome 130 (x86_64, NVIDIA GPU)
+Atanan Çerez: NID=511=... (Google Windows 11'e mühürledi!)
+           │
+           ▼ Çerez satıldı ve müşteriye verildi...
+[KULLANIM AŞAMASI (MÜŞTERİ)]
+Müşteri Çerezi Yükledi: Linux Ubuntu veya Mac Safari!
+           │
+           ▼ Google Sunucusuna İstek Ulaştı:
+[GOOGLE SUNUCUSU KONTROLÜ]:
+1. Gelen Çerez: "Ben Windows kullanan Ali'yim"
+2. Gelen Başlık: "User-Agent: Macintosh Mac OS X"
+3. Gelen WebGL : "Apple M2 GPU"
+           │
+           ▼ ALGORİTMA KARARI:
+"HİLE YAKALANDI! Çerez çalınmış veya bot devrede!"
+──> Çerez ANINDA iptal edilir ve IP engellenir!
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. User-Agent vs. Modern Client Hints (`Sec-CH-UA`)</h2>
+    <p>
+      Eski internette sadece tek bir `User-Agent` başlığı vardı. Ancak Google ve Chromium ekibi, parmak izi gizliliğini artırmak (ve botları daha kolay avlamak) için <strong>User-Agent Client Hints</strong> standardını zorunlu kıldı.
+    </p>
+
+    <div class="callout callout-info">
+      <div class="callout-title">📋 Modern Chrome'un Gönderdiği 4 Zorunlu Başlık</div>
+      <pre><code>Sec-Ch-Ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "Windows"
+Sec-Ch-Ua-Platform-Version: "15.0.0"
+<span class="code-badge">HTTP/2 REQUEST HEADERS</span></code></pre>
+    </div>
+
+    <ul>
+      <li>
+        <strong>Platform Version Sırrı:</strong> Windows 10 için bu değer `"10.0.0"` iken, Windows 11 23H2 için `"15.0.0"`, Windows 11 24H2 için `"19.0.0"` değerini alır. Çerez üretirken bu versiyon ile User-Agent string'i milimetrik uyuşmalıdır.
+      </li>
+      <li>
+        <strong>GREASE Marka Sıralaması:</strong> Google Chrome, botların sabit başlık yazmasını engellemek için marka listesinin başına rastgele sahte bir marka ekler (`"Not_A Brand";v="24"`). Bu sıralamanın bozulması Google tarafından bot olarak işaretlenir.
+      </li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. Donanım ve W3C Standartları: 8 GiB Kuralı</h2>
+    <p>
+      Birçok bot geliştiricisi, bilgisayarında 16 GB veya 32 GB RAM olduğu için tarayıcıya `navigator.deviceMemory = 32` enjekte eder. 
+    </p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🚨 Standart İhlali: W3C deviceMemory Tavanı</div>
+      <p>
+        W3C Device Memory resmi spesifikasyonuna göre, <strong>Google Chrome masaüstü tarayıcılarda `navigator.deviceMemory` değeri EN FAZLA 8 GiB dönebilir!</strong> Olası yasal değerler sadece şunlardır: `[0.25, 0.5, 1, 2, 4, 8]`.
+      </p>
+      <p style="margin-bottom: 0;">
+        Eğer bir profil Google'a <code>deviceMemory: 16</code> veya <code>32</code> beyan ederse, bu dünyadaki hiçbir gerçek Chrome'da var olamayacak bir değerdir ve anında bot filtrelerine takılır. Çerez çiftliğimizde tüm profiller <strong>tam olarak 8 GiB</strong> ile mühürlenmelidir!
+      </p>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Coğrafi ve Dil Tutarlılığı (Language Matrix)</h2>
+    <p>
+      Türkiye lokasyonlu bir IP üzerinden gezinirken tarayıcının dil ve saat dilimi ayarları şu matrise %100 uymalıdır:
+    </p>
+
+    <ul>
+      <li><strong>IP Ülkesi:</strong> Türkiye (TR / AS9121 Turkcell, AS47331 Vodafone, AS12735 Türk Telekom).</li>
+      <li><strong>Accept-Language:</strong> <code>tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7</code> (Ağırlıklı zincir).</li>
+      <li><strong>Timezone ID:</strong> <code>Europe/Istanbul</code> (UTC+3, yaz saati uygulaması yok).</li>
+      <li><strong>Klavye Düzeni (Keyboard Layout):</strong> Turkish Q (`tr`).</li>
+    </ul>
+
+    <!-- Section 5 -->
+    <h2>5. Kusursuz Çözüm: `profile_meta.json` Standart Paketi</h2>
+    <p>
+      Müşteriye sadece bir `.json` çerez dosyası vermek amatörlüktür. Profesyonel çerez çiftliği, her çerez dosyasının yanına o çerezin DNA'sını içeren bir metadata dosyası iliştirir:
+    </p>
+
+    <pre><code>{
+  "profile_id": "prof_tr_w11_8941",
+  "created_at": "2026-11-07T21:40:00Z",
+  "operating_system": "Windows 11 (Build 22631)",
+  "browser": "Google Chrome 131.0.6778.86",
+  "client_hints": {
+    "sec_ch_ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+    "sec_ch_ua_platform": "\"Windows\"",
+    "sec_ch_ua_platform_version": "\"15.0.0\"",
+    "sec_ch_ua_mobile": "?0"
+  },
+  "hardware": {
+    "cpu_cores": 8,
+    "memory_gb": 8,
+    "screen_resolution": "1920x1080",
+    "webgl_vendor": "Google Inc. (NVIDIA)",
+    "webgl_renderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "network": {
+    "country": "TR",
+    "locale": "tr-TR",
+    "timezone": "Europe/Istanbul"
+  },
+  "trust_metrics": {
+    "recaptcha_v3_score": 0.9,
+    "domains_visited": 18,
+    "cookie_count": 64,
+    "total_size_bytes": 48250
+  }
+}
+<span class="code-badge">PROFILE_META.JSON SPECIFICATION</span></code></pre>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🏆 Neden Rakiplerinizin Önüne Geçersiniz?</div>
+      <p>
+        Bu metadata dosyasını gören bir alıcı (SEO ajansı veya bot yazılımcısı), çerezi hangi User-Agent ve ekran çözünürlüğüyle kullanması gerektiğini tam olarak bilir. Çerezleri 1 ay boyunca hiç patlamadan çalışır. Müşteri memnuniyeti %100 olur ve sürekli sizden alım yapar!
+      </p>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_06.html" class="nav-link">⬅️ Modül 06: Anti-Bot & Trust-Score</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_08.html" class="nav-link">Modül 08: Ağ Seviyesi TLS / JA4 ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 07 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

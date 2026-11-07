@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 01: Web Çerezlerinin (HTTP State) Anatomisi ve Protokol Mimarisi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="index.html" class="nav-link disabled">⬅️ Önceki Modül</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_02.html" class="nav-link">Modül 02: Arama Motorlarında Çerezler ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part1">BÖLÜM I: TEMELLER VE PROTOKOLLER</span>
+      <h1>Modül 01: Web Çerezlerinin (HTTP State) Anatomisi ve Protokol Mimarisi</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        HTTP protokolünün durumsuz (stateless) yapısından Set-Cookie başlık mekanizmasına, 7 kritik çerez özniteliğinden modern tarayıcı sandbox kısıtlamalarına kadar çerezlerin teknik omurgası.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. HTTP Durumsuzluk (Stateless) İlkesi ve Çerezin Doğuşu</h2>
+    <p>
+      İnternetin temel taşı olan <strong>HTTP (Hypertext Transfer Protocol)</strong>, doğası gereği <em>"durumsuz" (stateless)</em> bir protokoldür. Bir istemci (tarayıcı) bir sunucuya istek gönderdiğinde, sunucu yanıtı verir ve bağlantı mantıksal olarak sıfırlanır. İstemci 1 saniye sonra ikinci bir istek attığında, sunucu bu isteğin aynı kişiden mi yoksa dünyanın öbür ucundaki başka bir bilgisayardan mı geldiğini saf HTTP protokolü üzerinden <strong>asla bilemez</strong>.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⚡ HTTP STATELESS PARADOKSU VE ÇÖZÜMÜ</div>
+      <div class="ascii-art">
+[Tarayıcı] ──> İSTEK 1: "Sepete Ürün Ekle" ──> [Sunucu]
+[Tarayıcı] <── YANIT 1: "Eklendi, Bitti" <──── [Sunucu] (Unuttu!)
+
+[Tarayıcı] ──> İSTEK 2: "Sepetimi Göster" ───> [Sunucu]
+[Tarayıcı] <── YANIT 2: "Sen kimsin? Boş!" <── [Sunucu] (Durumsuzluk!)
+
+        ════════════ ÇÖZÜM: ÇEREZ (COOKIE) ════════════
+
+[Tarayıcı] ──> İSTEK 1: "Giriş: user=ali" ───> [Sunucu]
+[Tarayıcı] <── Set-Cookie: session_id=XYZ987 <─ [Sunucu] (Kimlik verdi)
+   │
+   └─> Tarayıcı XYZ987 değerini yerel veritabanına mühürler.
+   │
+[Tarayıcı] ──> İSTEK 2: "Sepetim" + Cookie: XYZ987 ──> [Sunucu]
+[Tarayıcı] <── YANIT 2: "Hoş geldin Ali, sepetin!" <── [Sunucu] (Tanındı!)
+      </div>
+    </div>
+
+    <p>
+      1994 yılında Netscape mühendisi Lou Montulli tarafından icat edilen <strong>Magic Cookie (Web Çerezi)</strong>, işte bu belleksizlik krizini çözmek için geliştirilmiştir. Çerezler; sunucunun istemciye emanet ettiği, istemcinin kendi yerel diskinde sakladığı ve o sunucuya her gittiğinde pasaport gibi ibraz ettiği küçük metin (key-value) parçacıklarıdır.
+    </p>
+
+    <!-- Section 2 -->
+    <h2>2. Çerez Başlıklarının Yaşam Döngüsü: Set-Cookie ve Cookie</h2>
+    <p>
+      Bir çerezin varlığı, iki temel HTTP başlığı (header) arasındaki sürekli ping-pong hareketine dayanır:
+    </p>
+
+    <ol>
+      <li>
+        <strong>Set-Cookie (Sunucudan Tarayıcıya):</strong> Bir web sitesini ziyaret ettiğinizde, sunucu HTTP yanıtının (HTTP Response) başlık kısmında bir veya birden fazla <code>Set-Cookie</code> yönergesi gönderir.
+      </li>
+      <li>
+        <strong>Cookie (Tarayıcıdan Sunucuya):</strong> Tarayıcı, gelen çerezi doğrular, alan adı ve geçerlilik kurallarına uygunsa yerel veritabanına kaydeder. O alan adına (domain) yapılacak sonraki <strong>her bir HTTP isteğinde (CSS, JS, Resim, Sayfa)</strong>, <code>Cookie: anahtar=deger; diger_anahtar=deger2</code> başlığı otomatik olarak sunucuya taşınır.
+      </li>
+    </ol>
+
+    <div class="callout callout-info">
+      <div class="callout-title">🔍 Gerçek Bir HTTP Set-Cookie Paketi İncelemesi</div>
+      <pre><code>HTTP/2 200 OK
+content-type: text/html; charset=UTF-8
+date: Sat, 07 Nov 2026 21:00:00 GMT
+set-cookie: NID=511=dK8F9j2m_x9L3...; expires=Sun, 09-May-2027 21:00:00 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
+set-cookie: AEC=AVYB7cqX...; expires=Thu, 06-May-2027 21:00:00 GMT; path=/; domain=.google.com; Secure; HttpOnly; SameSite=lax
+<span class="code-badge">HTTP RESPONSE HEADERS</span></code></pre>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. 7 Temel Çerez Niteliğinin (Attributes) Derin Analizi</h2>
+    <p>
+      Bir çerez sadece bir isim ve değerden (`name=value`) ibaret değildir. Tarayıcının o çerezi ne zaman sileceğini, hangi adreslerde kullanacağını ve JavaScript'e gösterip göstermeyeceğini belirleyen 7 kritik nitelik vardır:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Öznitelik (Attribute)</th>
+            <th>Görev ve Tanım</th>
+            <th>Bot / Çerez Çiftliği Açısından Önemi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Domain</strong></td>
+            <td>Çerezin hangi web sitesine gönderileceğini belirler (Örn: <code>.google.com</code> veya <code>sub.site.com</code>).</td>
+            <td>Başında nokta olan wildcard domainler (`.google.com`), Google'ın arama, harita, haberler gibi tüm alt mülklerinde ortak taşınır.</td>
+          </tr>
+          <tr>
+            <td><strong>Path</strong></td>
+            <td>URL dizin yolunu sınırlar (Varsayılan <code>/</code>, yani tüm sitedir).</td>
+            <td>Farklı alt yollardaki kısıtlamaları bilmeyen botlar çerezi gönderemez ve oturum düşer.</td>
+          </tr>
+          <tr>
+            <td><strong>Expires</strong></td>
+            <td>Çerezin son kullanım tarihini UTC formatında belirler (Örn: `Sun, 09 May 2027 21:00:00 GMT`).</td>
+            <td>Eski tarihli bir çerez tarayıcıya enjekte edilirse anında silinir. "Aged" çerezlerin bu tarihi gelecekte olmalıdır.</td>
+          </tr>
+          <tr>
+            <td><strong>Max-Age</strong></td>
+            <td>Çerezin saniye cinsinden ömrüdür (Örn: `Max-Age=31536000` -> 1 yıl).</td>
+            <td>`Expires` ile çakışırsa modern tarayıcılarda daima `Max-Age` kazanır. Saat dilimi sapmalarını önler.</td>
+          </tr>
+          <tr>
+            <td><strong>Secure</strong></td>
+            <td>Çerezin yalnızca şifreli HTTPS bağlantısı üzerinden iletilmesini zorunlu kılar.</td>
+            <td>Güvenlik çerezlerinin tamamı bu bayrağı taşır. HTTP üzerinden yapılan test isteklerinde kaybolurlar.</td>
+          </tr>
+          <tr>
+            <td><strong>HttpOnly</strong></td>
+            <td>JavaScript'in (<code>document.cookie</code>) bu çerezi okumasını kesinlikle engeller.</td>
+            <td>XSS korumasıdır. Bir bot tarayıcıda JS ile çerez okumaya kalkarsa bu çerezleri göremez; CDP/Network seviyesinden çekmek zorundadır!</td>
+          </tr>
+          <tr>
+            <td><strong>SameSite</strong></td>
+            <td>Siteler arası (cross-site) isteklerde çerezin gönderilme kurallarını yönetir (`Strict`, `Lax`, `None`).</td>
+            <td>Google organik arama sonuçlarından hedef siteye tıklarken çerezin aktarılıp aktarılmayacağını belirler.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Birinci Taraf (First-Party) vs. Üçüncü Taraf (Third-Party) Çerezler</h2>
+    <p>
+      Çerez ticaretinde en çok karıştırılan ancak alıcıların kaliteyi belirlerken en çok baktığı konu budur:
+    </p>
+
+    <ul>
+      <li>
+        <strong>Birinci Taraf (First-Party) Çerez:</strong> Doğrudan kullanıcının adres çubuğuna yazdığı web sitesi tarafından atanan çerezdir (Örneğin `sozcu.com.tr`'ye girdiğinizde `sozcu.com.tr` tarafından atılan oturum çerezi).
+      </li>
+      <li>
+        <strong>Üçüncü Taraf (Third-Party) Çerez:</strong> Ziyaret ettiğiniz sayfada gömülü olan reklam ağları, sosyal medya widget'ları ve analitik sayaçları tarafından atanan çerezdir (Örneğin `sozcu.com.tr` üzerindeki Google Ads, Criteo veya Google Analytics kodunun `.doubleclick.net` veya `.google.com` adına yazdığı çerez).
+      </li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Çerez Çiftliği Sırrı: Neden Üçüncü Taraf Çerezler Para Eder?</div>
+      <p>
+        Bir bot sıfır çerezle doğrudan `google.com`'a gidip arama yaparsa, Google botu yakalar. Ancak bot önce 10 farklı Türk haber ve e-ticaret sitesini gezerse; o sitelerdeki Google AdSense ve Analytics scriptleri bu tarayıcıya <strong>üçüncü taraf takip çerezleri</strong> enjekte eder. 
+        Bot daha sonra Google'a gittiğinde, Google tarayıcıda kendi reklam ağının bıraktığı çerezleri görür ve şu çıkarımı yapar: <em>"Bu kullanıcı az önce Sözcü okudu, Trendyol'da gezindi, gerçek bir insan."</em>
+      </p>
+    </div>
+
+    <!-- Section 5 -->
+    <h2>5. Oturum (Session) Çerezleri vs. Kalıcı (Persistent) Çerezler</h2>
+    <p>
+      Eğer bir çerezde <code>Expires</code> veya <code>Max-Age</code> tanımlanmamışsa, o bir <strong>Oturum Çerezi (Session Cookie)</strong>'dir. Tarayıcı belleğinde (RAM) yaşar ve kullanıcı tarayıcıyı kapattığında yok edilir.
+    </p>
+    <p>
+      Eğer geçerlilik tarihi verilmişse, o bir <strong>Kalıcı Çerez (Persistent Cookie)</strong>'dir ve diske yazılır. Bizim çerez çiftliğinde ürettiğimiz ve sattığımız çerezler %100 oranında <strong>Kalıcı Çerezler</strong> olmalıdır; aksi takdirde alıcı tarayıcısını kapattığı an satın aldığı çerezler buharlaşır!
+    </p>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="index.html" class="nav-link disabled">⬅️ Önceki Modül</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_02.html" class="nav-link">Modül 02: Arama Motorlarında Çerezler ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 01 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 12: Proxy Stratejileri 2: Kendi 4G/5G Mobil Modem Çiftliğimiz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_11.html" class="nav-link">⬅️ Modül 11: Proxy Stratejileri 1</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_13.html" class="nav-link">Modül 13: IPv6 Stratejileri ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part5">BÖLÜM V: PROXY DEVRİMİ (AĞ STRATEJİLERİ)</span>
+      <h1>Modül 12: Proxy Stratejileri 2: Kendi 4G/5G Mobil Modem Çiftliğimiz</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Huawei E3372 USB 4G modem kurulumu, HiLink API ve AT komutlarıyla 4 saniyede uçak modu, WireGuard tüneliyle Oracle Cloud'a bağlama ve IP başına 0.006 TL maliyet sırrı.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Neden Mobil IP (CGNAT) Dünyanın En Güvenli IP'sidir?</h2>
+    <p>
+      Mobil operatörler (Turkcell, Vodafone, Türk Telekom), IPv4 adresi yetersizliği sebebiyle <strong>CGNAT (Carrier-Grade NAT)</strong> teknolojisi kullanır. 
+    </p>
+    <p>
+      Bu şu anlama gelir: Sizin 4G USB modeminize tahsis edilen bir IP adresini (Örn: `176.234.x.x`), o anda Kadıköy veya Kızılay meydanındaki <strong>5.000 farklı gerçek akıllı telefon da ortaklaşa kullanmaktadır!</strong>
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🛡️ Mobil IP'nin Dokunulmazlık Zırhı</div>
+      <p>
+        Google, Cloudflare veya Instagram bir mobil IP'yi engellerse, o anda sokaktaki binlerce masum gerçek müşterisini de engellemiş olur. Bu yüzden anti-bot sistemleri mobil IP'lere karşı <strong>aşırı toleranslıdır</strong>; neredeyse asla CAPTCHA çıkarmaz ve en yüksek güven puanını (0.95+) verir!
+      </p>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Donanım Mimarisi: 4G Dongle ve Yerel Gateway</h2>
+    <p>
+      Kendi sınırsız mobil proxy altyapımızı kurmak için gereken donanım listesi:
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🔌 DONANIM KURULUMU VE BAĞLANTI ŞEMASI</div>
+      <div class="ascii-art">
+[Sınırsız SIM Kart] ──> [Huawei E3372 4G USB Dongle] (~1.200 TL)
+                               │
+                               ▼ (USB Portuna Takılır)
+                [Raspberry Pi / Eski Laptop / Mini PC]
+                               │
+                               ▼ WireGuard VPN (Şifreli Tünel)
+          +───────────────────────────────────────────+
+          │        İNTERNET (WAN SİBER OTOYOLU)       │
+          +───────────────────────────────────────────+
+                               │
+                               ▼
+        [Oracle Cloud Ampere A1 (24 GB RAM Bulut Sunucu)]
+  (Tarayıcılar burada açılır, evdeki 4G modemden internete çıkar!)
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. 4 Saniyede Otomatik IP Rotasyonu: HiLink API ve AT Komutları</h2>
+    <p>
+      Huawei E3372 gibi popüler modemler iki modda çalışır:
+    </p>
+
+    <h3>Yöntem A: HiLink Web API (En Kolay Yöntem)</h3>
+    <p>
+      Modem bilgisayara takıldığında `192.168.8.1` IP'sinde yerel bir web arayüzü sunar. Bir Python betiğiyle modemin hücresel bağlantısını 3 saniye kapatıp açabiliriz:
+    </p>
+
+    <pre><code>import requests
+import time
+
+def rotate_hilink_ip():
+    """Huawei HiLink modemi hücresel ağı kapatıp açarak yeni IP alır."""
+    base_url = "http://192.168.8.1/api/dialup/mobile-dataswitch"
+    
+    # 1. Mobil veriyi kapat
+    payload_off = "&lt;request&gt;&lt;dataswitch&gt;0&lt;/dataswitch&gt;&lt;/request&gt;"
+    requests.post(base_url, data=payload_off, timeout=3)
+    time.sleep(2.0)
+    
+    # 2. Mobil veriyi aç
+    payload_on = "&lt;request&gt;&lt;dataswitch&gt;1&lt;/dataswitch&gt;&lt;/request&gt;"
+    requests.post(base_url, data=payload_on, timeout=3)
+    time.sleep(2.0)
+    
+    # 3. Yeni IP adresini doğrula
+    resp = requests.get("https://api.ipify.org?format=json", timeout=5)
+    print("Yeni Mobil IP:", resp.json().get("ip"))
+<span class="code-badge">PYTHON 3.12 / HILINK ROTATION</span></code></pre>
+
+    <!-- Section 4 -->
+    <h2>4. WireGuard Tüneli ile Oracle Sunucuyu Modeme Bağlama</h2>
+    <p>
+      Oracle sunucumuz Almanya'da, 4G modemimiz ise Türkiye'de evimizdedir. Oracle sunucusundaki Playwright tarayıcılarının Türkiye mobil IP'sinden çıkması için araya <strong>WireGuard</strong> tüneli kuruyoruz:
+    </p>
+
+    <ol>
+      <li>Evdeki mini PC'ye <code>3proxy</code> veya <code>Squid</code> proxy sunucusu kurulur (Örn: `127.0.0.1:3128`).</li>
+      <li>Evdeki mini PC ile Oracle sunucu arasında <code>WireGuard</code> VPN tüneli kurulur (Özel IP: `10.0.0.1` <-> `10.0.0.2`).</li>
+      <li>Oracle sunucusundaki Playwright worker'ları proxy adresi olarak <code>http://10.0.0.1:3128</code> adresini kullanır.</li>
+      <li><strong>Sonuç:</strong> Oracle'daki 40 tarayıcının tamamı Türkiye Turkcell/Türk Telekom IP'siyle gezinir!</li>
+    </ol>
+
+    <!-- Section 5 -->
+    <h2>5. Finansal Mucize: IP Başına 0.006 TL Maliyet!</h2>
+    <p>
+      Gelin hesabı birlikte yapalım:
+    </p>
+    <ul>
+      <li>Huawei 4G USB Modem Donanımı: <strong>~1.200 TL</strong> (Bir defalık demirbaş).</li>
+      <li>Sınırsız / Yüksek Kotalı Türk Operatör Data Hattı: <strong>Aylık ~600 TL (12$)</strong>.</li>
+      <li>Günde üretilen profil sayısı: <strong>3.000 adet</strong>.</li>
+      <li>Ayda üretilen profil sayısı: <strong>90.000 adet</strong>.</li>
+      <li><strong>Profil Başına Gerçek Proxy Maliyeti:</strong> <code>600 TL / 90.000 = 0.0066 TL (Yarım Kuruş!)</code></li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">🏆 Neden Kimse Sizinle Rekabet Edemez?</div>
+      <p>
+        Rakipleriniz Sağlam Proxy'ye veya yabancı sağlayıcılara GB başına 150 TL öderken, siz evdeki tek bir modemle <strong>yüz binlerce çerezi 600 TL sabit faturayla</strong> üretirsiniz. 
+        Çerezi 0.50 TL'ye (1 Cent) sattığınızda, satış gelirinin <strong>%98'i net kâr olarak cebinizde kalır!</strong>
+      </p>
+    </div>
+
+    <!-- Section 6: USB Modem vs. Normal Proxy Scenario Comparison -->
+    <h2>6. İki Farklı Üretim Senaryosu: 4G USB Modem vs. Normal Dönen Proxy</h2>
+    <p>
+      Üretim planlaması yaparken en kritik ayrım donanım mimarisidir: <strong>Tek bir USB 4G modem</strong> ile <strong>Normal Dönen (Backconnect) Proxy</strong> aynı şekilde çalışmaz.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⚙️ SERİ (USB MODEM) VS. PARALEL (DÖNEN PROXY) ÇALIŞMA MİMARİSİ</div>
+      <div class="ascii-art">
+[SENARYO 1: 4G USB MODEM (SERİ ÜRETİM)]
+Tek Fiziksel IP ──> [İşçi-1 (20sn)] ──> [Uçak Modu (4sn)]
+                        │
+                        ▼ (Modem yeni IP alınca)
+                    [İşçi-2 (20sn)] ──> [Uçak Modu (4sn)]
+* Darboğaz: Modemin yeni IP alma süresi (4-5 sn).
+* Kapasite: 24 saatte ~3.500 Adet / gün (Tek modemle).
+
+════════════════════════════════════════════════════════════════
+
+[SENARYO 2: NORMAL DÖNEN PORT PROXY (TAM PARALEL ÜRETİM)]
+Proxy Gateway   ──┬──> [İşçi-1  (IP: 85.105.x.x)]  ──> 0sn bekleme
+(Havuzda 100k IP) ├──> [İşçi-2  (IP: 176.240.x.x)] ──> 0sn bekleme
+                  └──> [İşçi-15 (IP: 212.58.x.x)]  ──> 0sn bekleme
+* Kapasite: 15 işçi AYNI ANDA koşar. 24 saatte ~50.000 – 65.000 Adet!
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Kriter</th>
+            <th>Senaryo 1: 4G USB Mobil Modem</th>
+            <th>Senaryo 2: Normal Dönen Port Proxy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>İşçi Çalışma Şekli</strong></td>
+            <td><strong>Sıralı / Seri</strong> (Tek IP'de tek işçi)</td>
+            <td><strong>Tam Paralel</strong> (15 işçi aynı anda)</td>
+          </tr>
+          <tr>
+            <td><strong>IP Rotasyon Süresi</strong></td>
+            <td>~4 - 5 saniye (Uçak modu beklemesi)</td>
+            <td><strong>0 saniye</strong> (Anında Backconnect geçiş)</td>
+          </tr>
+          <tr>
+            <td><strong>Günlük Üretim Hacmi</strong></td>
+            <td><strong>3.500 – 4.000 Adet</strong></td>
+            <td><strong>50.000 – 65.000 Adet</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Aylık Üretim Hacmi</strong></td>
+            <td>~100.000 Adet / ay</td>
+            <td>~1.500.000 – 2.000.000 Adet / ay</td>
+          </tr>
+          <tr>
+            <td><strong>Çerez Güven Kalitesi</strong></td>
+            <td>⭐⭐⭐⭐⭐ (Saf Mobil CGNAT, 0.99 Trust)</td>
+            <td>⭐⭐⭐⭐ (Residential/ISP ASN, 0.85 Trust)</td>
+          </tr>
+          <tr>
+            <td><strong>Aylık Proxy Gideri</strong></td>
+            <td><strong>~600 TL</strong> (Sabit Sınırsız SIM Faturası)</td>
+            <td><strong>~1.500 TL – 2.000 TL</strong> (Sınırsız Port Paketi)</td>
+          </tr>
+          <tr>
+            <td><strong>Aylık Net Kâr (0.50 TL'den)</strong></td>
+            <td><strong>~51.000 TL / ay</strong></td>
+            <td><strong>~750.000 TL – 970.000 TL / ay</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Hedef Müşteri Segmenti</strong></td>
+            <td>Butik Ajanslar, Yüksek Kaliteli Hit Arayanlar</td>
+            <td>Toptancılar, Devasa Botçular, Global Pazar (Whop)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Aşamalı Büyüme Stratejisi (Sıfır Riskli Başlangıç):</h3>
+    <ol>
+      <li><strong>1. Aşama (İlk Ay):</strong> Tek bir 4G USB modem ile başlanır. Günde 3.500 adet çerez üretilir. R10 ve Shopier'de satılarak ayda <strong>~50.000 TL risksiz net kâr</strong> kazanılır. Sistemin tüm dinamikleri sahada öğrenilir.</li>
+      <li><strong>2. Aşama (Ölçeklenme):</strong> Müşteri talebi günde 10.000'i aştığında, kazançtan 2.000 TL ayrılarak sınırsız port proxy havuzuna geçilir. Oracle 24GB ARM makinesinin 15 işçisi aynı anda devreye sokulur ve üretim günde <strong>50.000+ adede</strong> tırmandırılır.</li>
+    </ol>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_11.html" class="nav-link">⬅️ Modül 11: Proxy Stratejileri 1</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_13.html" class="nav-link">Modül 13: IPv6 Stratejileri ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 12 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

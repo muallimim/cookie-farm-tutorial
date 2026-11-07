@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 16: Kalite Kontrol, Olgunluk ve Anti-Detect Paketleme</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_15.html" class="nav-link">⬅️ Modül 15: Hibrit Üretim Motoru</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_17.html" class="nav-link">Modül 17: Fiyatlandırma Stratejisi ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part6">BÖLÜM VI: YAZILIM MOTORU VE PAKETLEME</span>
+      <h1>Modül 16: Kalite Kontrol, Olgunluk ve Anti-Detect Paketleme</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Çerez olgunluk eşikleri, Dolphin{anty} ve AdsPower uyumlu toplu dışa aktarma (export), ZIP arşivleme otomasyonu ve Kalite Güvence (QA) raporlaması.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Otomatik Kalite Kontrol (QA) Algoritması</h2>
+    <p>
+      Üretilen her profil doğrudan müşteriye verilmez. Çiftlik motoru, her profil diske yazılmadan önce bir **Kalite Denetim Filtresinden (Quality Gate)** geçer. 
+      Şu 3 temel metriği karşılamayan profiller satış havuzuna alınmaz:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Denetim Kriteri</th>
+            <th>Minimum Eşik Değeri</th>
+            <th>Başarısız Olursa Yapılan İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Çerez Veri Boyutu</strong></td>
+            <td>Min. <strong>30 KB</strong></td>
+            <td>Yetersiz gezinme; profile 3 ek site daha gezdirilir.</td>
+          </tr>
+          <tr>
+            <td><strong>Benzersiz Alan Adı Sayısı</strong></td>
+            <td>Min. <strong>8 farklı domain</strong></td>
+            <td>Eksik üçüncü taraf çerezi; haber siteleri tekrar taranır.</td>
+          </tr>
+          <tr>
+            <td><strong>Kritik Google Çerezleri</strong></td>
+            <td><code>NID</code> ve <code>AEC</code> zorunlu!</td>
+            <td>Google oturumu başarısız sayılır, profil çöpe atılır.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Anti-Detect Tarayıcı Standartlarına Dönüştürme</h2>
+    <p>
+      Piyasadaki müşterilerin %80'i <strong>Dolphin{anty}</strong> veya <strong>AdsPower</strong> antidetect tarayıcıları kullanır. 
+      Eğer müşteriye bu tarayıcılara doğrudan sürüklenebilir JSON verirseniz, rakipleriniz arasından sıyrılırsınız:
+    </p>
+
+    <h3>Dolphin{anty} Toplu İçe Aktarma Formatı</h3>
+    <pre><code>[
+  {
+    "name": "Profil_001_TR_Win11",
+    "tags": ["Aged", "Organic", "TR"],
+    "mainWebsite": "google",
+    "cookies": [ ...EditThisCookie JSON Listesi... ],
+    "useragent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ...",
+    "platform": "windows",
+    "canvas": "real",
+    "webgl": "real",
+    "webglRenderer": "ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  }
+]
+<span class="code-badge">DOLPHIN{ANTY} IMPORT SCHEMA</span></code></pre>
+
+    <!-- Section 3 -->
+    <h2>3. Otomatik ZIP Paketleme Pipeline'ı (`packager.py`)</h2>
+    <p>
+      Satışa hazır her 500 veya 1.000 profili tek tıkla şık bir ZIP dosyasına dönüştüren, içine kullanım kılavuzu ve doğrulama sertifikası koyan Python kodu:
+    </p>
+
+    <pre><code>import os
+import zipfile
+import json
+from datetime import datetime
+
+def package_cookie_batch(batch_id: str, profiles_dir: str, output_zip_path: str):
+    """500 adetlik çerez profilini müşteri için ZIP paketine dönüştürür."""
+    readme_content = f"""===================================================================
+ORGANIK ISITILMIS COKIE PAKETI - KALITE GUVENCE SERTIFIKASI
+Paket ID: {batch_id}
+Uretim Tarihi: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+Hedef Ulke: Turkiye (TR) | Dil: tr-TR
+Uyumluluk: Dolphin{{anty}}, AdsPower, GoLogin, Playwright, BAS
+===================================================================
+KULLANIM TALIMATI:
+1. 'cookies_json/' klasoru icindeki her dosya 1 adet bagimsiz profildir.
+2. Her dosya icin yanindaki 'meta.json' User-Agent degerini kullaniniz.
+3. Dolphin{{anty}} kullaniyorsaniz 'dolphin_bulk_import.json' dosyasini 
+   dogrudan Import sekmesine surukleyip birakabilirsiniz.
+===================================================================
+"""
+    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # 1. README / Garanti Belgesi ekle
+        zipf.writestr("README_KURULUM.txt", readme_content)
+        
+        # 2. Profilleri ekle
+        for root, _, files in os.walk(profiles_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, profiles_dir)
+                zipf.write(file_path, arcname)
+
+    print(f"Paketleme Tamamlandi: {output_zip_path}")
+<span class="code-badge">PYTHON 3.12 / PACKAGER</span></code></pre>
+
+    <!-- Section 4 -->
+    <h2>4. Ürün Ambalajı ve Müşteriye Sunum Standartları</h2>
+    <p>
+      Müşteri ZIP dosyasını açtığında karşılaştığı düzenli klasör yapısı:
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">📁 TESLİM EDİLEN ZIP DOSYASININ İÇ YAPISI</div>
+      <div class="ascii-art">
+📦 Paket_1000_Adet_Aged_Cookies_TR.zip
+   ├── 📄 README_KURULUM.txt (Kullanım kılavuzu & Garanti bilgisi)
+   ├── 📊 QA_TEST_RAPORU.json (reCAPTCHA v3 0.9 doğrulama kanıtı)
+   ├── 🐬 dolphin_bulk_import.json (Dolphin tek tıkla yükleme şablonu)
+   ├── 📂 cookies_json/ (Tüm tekil profiller)
+   │   ├── 📄 profile_001.json
+   │   ├── 📄 profile_001_meta.json
+   │   ├── 📄 profile_002.json
+   │   └── ... (1.000 adet)
+   └── 📂 cookies_netscape_txt/ (Request botları için cURL formatı)
+       ├── 📄 profile_001.txt
+       └── ...
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_15.html" class="nav-link">⬅️ Modül 15: Hibrit Üretim Motoru</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_17.html" class="nav-link">Modül 17: Fiyatlandırma Stratejisi ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 16 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

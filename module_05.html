@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 05: Çerez Formatları, Dönüştürme ve Depolama Standartları</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_04.html" class="nav-link">⬅️ Modül 04: Google Ekosistemi Çerezleri</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_06.html" class="nav-link">Modül 06: Anti-Bot & Trust-Score ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part2">BÖLÜM II: TEKNİK DERİNLİK VE GOOGLE SIRLARI</span>
+      <h1>Modül 05: Çerez Formatları, Dönüştürme ve Depolama Standartları</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Tek site çerezi vs. çerez seti ayrımı, EditThisCookie JSON, Netscape cookies.txt, Chromium SQLite tablosu, DPAPI şifreleme tuzakları ve Python dönüştürücü motoru.
+      </p>
+    </header>
+
+    <!-- Section 1: Core Commercial & Technical Definition -->
+    <h2>1. Temel Ticari ve Teknik Tanım: Biz Müşteriye Aslında Ne Satıyoruz?</h2>
+    <p>
+      Bu ticaret alanına yeni adım atanların zihnini en çok karıştıran soru şudur: 
+      <em>"Biz kullanıcılara tek bir site için ziyaret çerezi mi satacağız, bir çerez seti mi, yoksa profilin tamamını mı?"</em>
+    </p>
+    <p>
+      Kısa ve net cevap: <strong>Piyasada asıl satılan standart ürün, "Tek bir sitenin çerezi" DEĞİL, tek bir sanal insanın gezintisiyle oluşan "BİR PROFİLİN TÜM ÇEREZLERİDİR (Çerez Seti)".</strong>
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">📦 ÇEREZ TİCARETİNDE ÜRÜN ÇEŞİTLERİ VE TESLİMAT YAPISI</div>
+      <div class="ascii-art">
+[MÜŞTERİNİN İNDİRDİĞİ ZIP PAKETİ (Örn: 1.000 Adet)]:
+📦 Siparis_1000_Adet.zip
+ ├── 📄 profil_0001.json ──> (Google, Haber, E-Ticaret... 95 çerez)
+ ├── 📄 profil_0002.json ──> (Farklı IP ile gezilmiş 110 çerez)
+ ├── 📄 profil_0003.json ──> (Farklı geçmişle üretilmiş 120 çerez)
+ ├── ...
+ ├── 📄 profil_1000.json
+ └── 📄 user_agents.txt  ──> (Her profilin eşleştiği User-Agent)
+      </div>
+    </div>
+
+    <h3>Neden "Tek Bir Sitenin Çerezi" Satılmaz ve Çöp Hükmündedir?</h3>
+    <p>
+      Diyelim ki tarayıcıyı yalnızca <code>google.com</code>'a soktunuz ve sadece Google'ın verdiği <code>NID</code> ve <code>AEC</code> çerezlerini kaydedip müşteriye sattınız.
+    </p>
+    <ul>
+      <li>Müşteri bu çerezi kendi botuna yükleyip Google'da arama yapmaya kalktığında, Google algoritmaları tarayıcı belleğini inceler:</li>
+      <li><em>"Bu tarayıcıda hiç gazete çerezi yok, hiç YouTube çerezi yok, hiçbir e-ticaret veya sayaç (GA4) çerezi yok. Yaşayan hiçbir gerçek insan dünyada sadece tek bir siteye girip çıkmaz!"</em></li>
+      <li>Sonuç: Bot anında "anomali / yapay aktivite" olarak etiketlenir, CAPTCHA patlar veya sıralama tıklaması çöpe atılır. <strong>Tek site çerezi izole ve yapay olduğu için değersizdir.</strong></li>
+    </ul>
+
+    <h3>Piyasanın Standart Ürünü: "Profil Çerez Seti" (1 Profil = 1 Dosya)</h3>
+    <p>
+      İşte bu yüzden HitBot gibi endüstriyel çiftlikler gerçek bir insanı simüle eder:
+    </p>
+    <ol>
+      <li>HitBot bir tarayıcı açar, temiz bir IP ile Google'a girer, haber portallarına tıklar, YouTube'da gezinir, Trendyol'a uğrar (20-25 saniye).</li>
+      <li>Bu gezinme sırasında tarayıcı hafızasında 15 farklı sitenin bıraktığı toplam <strong>80 ila 150 adet çerez</strong> birikir.</li>
+      <li>HitBot bu çerezlerin tamamını tek bir dosyaya mühürler: <code>profil_0001.json</code>.</li>
+    </ol>
+    <p>
+      Forum jargonunda (R10, BHW) buna kısaca <em>"1 Adet Çerez"</em> denir; ancak teknik olarak o dosya <strong>1 sanal insanın tüm dijital geçmişini barındıran tam bir çerez setidir</strong>.
+    </p>
+
+    <h3>Müşteri Bu Dosyayı Kendi Botunda Nasıl Kullanır? ("Kullan-At İnsan Kalkanı")</h3>
+    <p>
+      Müşteri sizden 1.000 adetlik paketi aldığında botunu şöyle çalıştırır:
+    </p>
+    <ul>
+      <li><strong>1. Görev:</strong> Bot açılır ➔ <code>profil_0001.json</code> dosyasındaki çerezleri tarayıcıya enjekte eder ➔ Hedef sitedeki görevini (tıklama, arama, veri çekme) 3 gündür internette gezen gerçek bir kullanıcı gibi tamamlar ➔ Tarayıcıyı kapatır.</li>
+      <li><strong>2. Görev:</strong> Sıradaki görevi için <code>profil_0002.json</code> çerezlerini yükler. Böylece her görevi farklı ve güvenilir bir insan kimliğiyle yürütülür.</li>
+    </ul>
+
+    <h3>Ürün Türleri Karşılaştırma Tablosu</h3>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Satış Formatı</th>
+            <th>Dosya İçeriği</th>
+            <th>Hedef Alıcı Kitlesi</th>
+            <th>Piyasa Birim Fiyatı</th>
+            <th>Bizim Üretim Eforumuz</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Tek Site Çerezi</strong></td>
+            <td>Sadece 1 siteye ait 2-3 çerez</td>
+            <td>Neredeyse kimse almaz (Değersiz)</td>
+            <td>0 TL</td>
+            <td>Verimsiz / Tavsiye Edilmez</td>
+          </tr>
+          <tr>
+            <td><strong>Çerez Seti (JSON / Netscape)</strong><br><span style="color: #34d399; font-size: 0.85rem;">★ EN ÇOK SATILAN STANDART</span></td>
+            <td>Tek bir profilin 15 sitede biriktirdiği tüm çerezler (`profil_X.json`)</td>
+            <td>SEO Ajansları, Organik Hit Botları, Scraping ekipleri</td>
+            <td><strong>0.50 TL / Adet</strong></td>
+            <td><strong>Sıfır Ek Efor (HitBot'un doğal çıktısı)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Tam Tarayıcı Profili</strong><br><span style="color: #60a5fa; font-size: 0.85rem;">★ ANTİ-DETECT PAKETİ</span></td>
+            <td>Çerezler + LocalStorage + Donanım Parmak İzi Metadata'sı</td>
+            <td>Dolphin{anty} ve AdsPower kullanan çoklu hesapçılar</td>
+            <td><strong>2.00 TL – 3.00 TL / Adet</strong></td>
+            <td>HitBot çıktısına ~10 satır JSON meta sarmalayıcı eklemek</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Çerezlerin Dosya Formatları: Neden Birden Fazla Standart Var?</h2>
+    <p>
+      Çerez ticaretinde alıcılara çerez teslim ederken onların hangi yazılımı kullandığını bilmek zorundasınız. Bir cURL kullanıcısına JSON verirseniz botu çalışmaz; bir Playwright kullanıcısına Netscape verirseniz hata alır. Bu nedenle her iki ana formatı ve aralarındaki dönüşümü mükemmel bilmeliyiz.
+    </p>
+
+    <!-- Section 3 -->
+    <h2>3. Format 1: Standart JSON Şeması (EditThisCookie / Playwright)</h2>
+    <p>
+      Piyasadaki talebin %75'ini oluşturan modern formattır. Tarayıcı eklentileri (Cookie-Editor, EditThisCookie), Python Playwright, Puppeteer ve Selenium doğrudan bu formatla konuşur:
+    </p>
+
+    <pre><code>[
+  {
+    "domain": ".google.com",
+    "expirationDate": 1778361600.412,
+    "hostOnly": false,
+    "httpOnly": true,
+    "name": "NID",
+    "path": "/",
+    "sameSite": "no_restriction",
+    "secure": true,
+    "session": false,
+    "storeId": "0",
+    "value": "511=dK8F9j2m_x9L3Qv1..."
+  },
+  {
+    "domain": ".google.com",
+    "expirationDate": 1746825600.128,
+    "hostOnly": false,
+    "httpOnly": true,
+    "name": "AEC",
+    "path": "/",
+    "sameSite": "lax",
+    "secure": true,
+    "session": false,
+    "storeId": "0",
+    "value": "AVYB7cqX4Y9..."
+  }
+]
+<span class="code-badge">JSON COOKIES FORMAT</span></code></pre>
+
+    <!-- Section 4 -->
+    <h2>4. Format 2: Netscape / cURL Formatı (`cookies.txt`)</h2>
+    <p>
+      1990'lardan kalma sekme ile ayrılmış (tab-delimited) klasik formattır. Doğrudan cURL, Wget, Python `http.cookiejar` veya Go/C++ request botları bu formatı tercih eder:
+    </p>
+
+    <pre><code># Netscape HTTP Cookie File
+# http://curl.haxx.se/rfc/cookie_spec.html
+# This file was generated by HitBot Farm! Edit at your own risk.
+
+.google.com	TRUE	/	TRUE	1778361600	NID	511=dK8F9j2m_x9L3Qv1...
+.google.com	TRUE	/	TRUE	1746825600	AEC	AVYB7cqX4Y9...
+#HttpOnly_.google.com	TRUE	/	TRUE	1746825600	SOCS	CAESEwgDEgk2...
+<span class="code-badge">NETSCAPE COOKIES.TXT FORMAT</span></code></pre>
+
+    <div class="callout callout-info">
+      <div class="callout-title">📌 Netscape Dosya Sütunlarının Anlamı (Soldan Sağa)</div>
+      <ol style="margin-bottom: 0;">
+        <li><strong>Domain:</strong> Çerezin geçerli olduğu alan adı. (Başında <code>#HttpOnly_</code> varsa HttpOnly çerezdir).</li>
+        <li><strong>Flag:</strong> Alt alan adlarının bu çereze erişip erişemeyeceği (`TRUE` veya `FALSE`).</li>
+        <li><strong>Path:</strong> Dizin kısıtlaması (Genellikle `/`).</li>
+        <li><strong>Secure:</strong> Sadece HTTPS ile mi taşınacağı (`TRUE` veya `FALSE`).</li>
+        <li><strong>Expiration:</strong> UNIX zaman damgası cinsinden son kullanım tarihi (Epoch timestamp).</li>
+        <li><strong>Name:</strong> Çerezin adı.</li>
+        <li><strong>Value:</strong> Çerezin değeri.</li>
+      </ol>
+    </div>
+
+    <!-- Section 5 -->
+    <h2>5. Chromium Ham SQLite Depolaması ve Şifreleme Tuzağı</h2>
+    <p>
+      Chromium ve Google Chrome, tüm çerezleri diskte bir <strong>SQLite 3 veritabanı dosyasında</strong> saklar:
+    </p>
+    <ul>
+      <li><strong>Windows Yolu:</strong> <code>%LOCALAPPDATA%\Google\Chrome\User Data\Default\Network\Cookies</code></li>
+      <li><strong>Linux Yolu:</strong> <code>~/.config/google-chrome/Default/Network/Cookies</code></li>
+    </ul>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🚨 Acemilerin Düştüğü DPAPI Tuzağı: Dosyayı Kopyalamak Neden Çalışmaz?</div>
+      <p>
+        Birçok kişi `Cookies` SQLite dosyasını doğrudan müşteriye gönderip satabileceğini düşünür. Oysa Chrome v80+ ve özellikle v120+ sürümlerinde:
+      </p>
+      <ul>
+        <li>Çerezin `value` değeri veritabanında düz metin değil, <strong>encrypted_value</strong> sütununda şifreli (BLOB) olarak tutulur.</li>
+        <li>Windows'ta bu şifreleme <strong>DPAPI (CryptProtectData)</strong> ve v127+ ile gelen <strong>App-Bound Encryption</strong> ile o kullanıcının Windows şifresine kilitlenir!</li>
+        <li>O dosyayı başka bir bilgisayara taşıdığınızda Chrome şifreyi çözemez ve <strong>tüm çerezleri anında siler!</strong></li>
+      </ul>
+      <p style="margin-top: 0.8rem; margin-bottom: 0;">
+        <strong>Doğru Yöntem:</strong> Çerezler asla ham dosya olarak kopyalanmaz. Çalışan Playwright oturumundan bellek seviyesinde (`await context.cookies()`) veya CDP `Network.getCookies` protokolüyle şifresi çözülmüş saf metin olarak çekilir ve JSON olarak mühürlenir.
+      </p>
+    </div>
+
+    <!-- Section 6 -->
+    <h2>6. İki Yönlü Format Çevirici (Production Python Kodu)</h2>
+    <p>
+      Çerez çiftliğinizde JSON olarak ürettiğiniz bir çerezi tek satırda Netscape formatına dönüştüren veya tam tersini yapan endüstriyel Python fonksiyonu:
+    </p>
+
+    <pre><code>import json
+from typing import List, Dict
+
+def json_to_netscape(cookies: List[Dict]) -> str:
+    """JSON çerez listesini standart Netscape cookies.txt formatına çevirir."""
+    lines = [
+        "# Netscape HTTP Cookie File",
+        "# Exported by Industrial Cookie Farm Engine",
+        ""
+    ]
+    for c in cookies:
+        domain = c.get("domain", "")
+        if c.get("httpOnly", False) and not domain.startswith("#HttpOnly_"):
+            domain = f"#HttpOnly_{domain}"
+            
+        flag = "TRUE" if domain.startswith(".") else "FALSE"
+        path = c.get("path", "/")
+        secure = "TRUE" if c.get("secure", False) else "FALSE"
+        
+        # Expiry timestamp dönüştürme
+        raw_exp = c.get("expirationDate") or c.get("expires") or 0
+        expiry = int(float(raw_exp)) if raw_exp else 0
+        
+        name = c.get("name", "")
+        val = c.get("value", "")
+        
+        lines.append(f"{domain}\t{flag}\t{path}\t{secure}\t{expiry}\t{name}\t{val}")
+        
+    return "\n".join(lines)
+
+def netscape_to_json(netscape_text: str) -> List[Dict]:
+    """Netscape cookies.txt içeriğini JSON formatına dönüştürür."""
+    cookies = []
+    for line in netscape_text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("# ") or line == "#":
+            continue
+            
+        parts = line.split("\t")
+        if len(parts) < 7:
+            continue
+            
+        domain_raw, flag, path, secure, expiry, name, val = parts[:7]
+        http_only = domain_raw.startswith("#HttpOnly_")
+        domain = domain_raw.replace("#HttpOnly_", "")
+        
+        cookies.append({
+            "domain": domain,
+            "expirationDate": float(expiry) if expiry.isdigit() else None,
+            "hostOnly": flag == "FALSE",
+            "httpOnly": http_only,
+            "name": name,
+            "path": path,
+            "secure": secure.upper() == "TRUE",
+            "value": val
+        })
+    return cookies
+<span class="code-badge">PYTHON 3.12 ENGINE</span></code></pre>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_04.html" class="nav-link">⬅️ Modül 04: Google Ekosistemi Çerezleri</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_06.html" class="nav-link">Modül 06: Anti-Bot & Trust-Score ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 05 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

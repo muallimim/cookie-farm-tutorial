@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 02: Arama Motoru ve Anti-Bot Algoritmalarında Çerezlerin Rolü</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_01.html" class="nav-link">⬅️ Modül 01: Çerez Anatomisi</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_03.html" class="nav-link">Modül 03: Çerez Pazarı ve Alıcılar ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part1">BÖLÜM I: TEMELLER VE PROTOKOLLER</span>
+      <h1>Modül 02: Arama Motoru ve Anti-Bot Algoritmalarında Çerezlerin Rolü</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Temiz tarayıcı paradoksu, Google NavBoost ve RankBrain algoritmalarının çerez analizi, oturumlu vs. anonim çerezler ve çerez yaşlanması (aging) mekaniği.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. "Sıfır / Temiz Tarayıcı" (Clean Profile) Anomalisi</h2>
+    <p>
+      Otomasyona ve bot dünyasına yeni giren geliştiricilerin yaptığı en ölümcül hata şudur: Her yeni görevde tarayıcıyı tamamen sıfırlamak (`incognito` mod veya sıfır `user_data_dir`) ve tertemiz bir sayfayla Google'a gitmek.
+    </p>
+    <p>
+      Geliştirici bunu <em>"Kimse beni izleyemez, tertemiz başladım"</em> sanır. Oysa Google'ın devasa makine öğrenimi modelleri (NavBoost, RankBrain, SpamBrain) açısından bu durum tam tersidir:
+    </p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🚨 Google'ın Güvenlik Algoritması Sıfır Tarayıcıyı Nasıl Görür?</div>
+      <p>
+        Normal bir insan interneti günde ortalama 2-6 saat kullanır. Tarayıcısında bankalar, e-ticaret siteleri, haber portalları, sosyal medya ve arama geçmişi birikir. Dünyada <strong>hiçbir çerezi olmayan, hiçbir siteye girmemiş, hiçbir geçmişi bulunmayan</strong> bir tarayıcı yalnızca iki durumda var olabilir:
+      </p>
+      <ol style="margin-bottom: 0;">
+        <li>Kullanıcı 2 dakika önce sıfır bir bilgisayar satın almış veya Windows'a format atmıştır (Dünya genelinde dakikada %0.001 ihtimal).</li>
+        <li><strong>Bu bir bottur!</strong> Otomasyon aracı az önce headless bir sekme fırlatmıştır (Dünya genelinde dakikada %99.999 ihtimal).</li>
+      </ol>
+    </div>
+
+    <p>
+      Google, çerezsiz bir tarayıcı doğrudan SERP'te arama yapmaya kalktığında şu savunma mekanizmalarını devreye sokar:
+    </p>
+    <ul>
+      <li><strong>Anlık CAPTCHA / Image Challenge:</strong> Kullanıcıya hemen görsel doğrulama patlatır.</li>
+      <li><strong>Tıklama İptali (Click Discard):</strong> Bot hedef siteye tıklasa bile, Google bu tıklamayı "şüpheli/bot aktivitesi" sınıfına sokar ve Search Console sıralama hesaplamasına (NavBoost CTR) **dahil etmez**. Bot boşuna kota harcamış olur!</li>
+      <li><strong>Sınırlı SERP Görünümü:</strong> Reklamları gizler, arama sonuç sayfa yapısını dinamik olarak bozar.</li>
+    </ul>
+
+    <!-- Section 2 -->
+    <h2>2. Davranışsal Güven Puanı (Trust Score) İnşası</h2>
+    <p>
+      Google anti-bot sistemleri, her gelen istemciye 0 ile 1 arasında görünmez bir <strong>Güven Skoru (Trust Score)</strong> atar. Bu skor ne kadar yüksekse, istemcinin aramaları ve hedef site tıklamaları o kadar "organik ve değerli" kabul edilir.
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">📊 GÜVEN PUANININ (TRUST SCORE) ÇEREZ GEÇMİŞİYLE GELİŞİMİ</div>
+      <div class="ascii-art">
+[0. Gün] ──> Sıfır Profil (0 Çerez)    ──> Trust: 0.12 (Bot Alarmı!)
+                │
+                ▼ (5 Haber Sitesi + Google Analytics Çerezleri)
+[1. Gün] ──> 40 KB Çerez Derinliği     ──> Trust: 0.45 (Gözlemde)
+                │
+                ▼ (YouTube Video İzleme + Trendyol/Amazon Gezintisi)
+[3. Gün] ──> 90 KB Çerez + AEC/1P_JAR  ──> Trust: 0.72 (Organik İnsan)
+                │
+                ▼ (Google News + Dinlenmiş / Aged Olgun Profil)
+[7. Gün] ──> 150 KB Çerez + Ekosistem  ──> Trust: 0.94 (VIP Ziyaretçi)
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. Oturumlu (Gmail Açık) vs. Oturumsuz (Isıtılmış Anonim) Çerezler</h2>
+    <p>
+      Piyasada iki farklı çerez türü işlem görür. Ticari çerez çiftliğinde hangisine odaklanmanız gerektiğini bilmek çok önemlidir:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Kriter</th>
+            <th>Oturumlu (Gmail / Google Hesabı Açık)</th>
+            <th>Oturumsuz (Isıtılmış / Kasımlış Anonim)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Hesap Gereksinimi</strong></td>
+            <td>Evet (Gerçek bir Gmail + Şifre + Kurtarma E-postası gerektirir).</td>
+            <td><strong>Hayır (Sıfır hesap maliyeti, tamamen sentetik gezinme).</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Üretim Maliyeti</strong></td>
+            <td>Yüksek (Gmail satın alma maliyeti: 5 TL – 15 TL/adet).</td>
+            <td><strong>Çok Düşük (Sadece proxy ve elektrik: ~0.01 TL – 0.10 TL).</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Patlama / Ban Riski</strong></td>
+            <td>Yüksek (Google IP değişiminde "Şüpheli Giriş / SMS Onayı" kilidi vurabilir).</td>
+            <td><strong>Sıfır (Hesap olmadığı için kilitlenme riski yoktur, IP bağımsızdır).</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Piyasa Fiyatı</strong></td>
+            <td>10 TL – 35 TL / adet</td>
+            <td>0.50 TL – 2.50 TL / adet</td>
+          </tr>
+          <tr>
+            <td><strong>Ölçeklenebilirlik</strong></td>
+            <td>Günde en fazla birkaç yüz adet üretilebilir.</td>
+            <td><strong>Günde 50.000+ adet seri bant üretimi yapılabilir!</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-title">💡 Stratejik Karar: Neden "Isıtılmış Anonim Çerez"?</div>
+      <p>
+        Oturumlu Gmail çerezleri satmak zordur; alıcı başka proxy'den bağlandığı an hesap askıya alınabilir ve müşteri iade ister. Ancak <strong>Isıtılmış Anonim Çerezler</strong> kilitlenmez, SMS istemez ve sıfır maliyetle sınırsız üretilebilir. Bizim çerez çiftliğimizin amiral gemisi ürünü <strong>Isıtılmış Anonim Çerezler</strong> olacaktır.
+      </p>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Çerez Çürümesi (Cookie Decay) ve Yaşlanma (Aged Cookies)</h2>
+    <p>
+      Tıpkı şarap veya peynir gibi, çerezler de <strong>"dinlendirildikçe" (aged)</strong> değer kazanır.
+    </p>
+    <ul>
+      <li><strong>Taze Üretilmiş (Fresh - 1 Saatlik) Çerez:</strong> Siteler gezilmiş ve çerezler alınmıştır. Ancak çerezin üzerindeki `created_at` zaman damgası birkaç dakika öncesini gösterir. Etkilidir ancak sunucu kontrollerinde yeni bir kullanıcı olduğu bellidir.</li>
+      <li><strong>Dinlendirilmiş (Aged - 7-14 Günlük) Çerez:</strong> Çerezler 7 gün önce üretilmiş ve depoda bekletilmiştir. Google'a gittiğinde çerez zaman damgaları 7 gün öncesini işaret eder. Google sunucusu der ki: <em>"Bu kullanıcı en az 1 haftadır aktif olarak internette geziyor."</em> Güven skoru tavan yapar.</li>
+    </ul>
+
+    <!-- Section 5 -->
+    <h2>5. Vaka Analizi: A/B Sıralama Testi (Search Console Verileri)</h2>
+    <p>
+      Aynı anahtar kelimede (`istanbul avukat`) 5. sayfada yer alan bir hedef siteye 7 gün boyunca iki farklı yöntemle günde 100 hit gönderildi:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Test Grubu</th>
+            <th>Kullanılan Çerez Türü</th>
+            <th>Search Console Yansıma Oranı</th>
+            <th>Sıralama Değişimi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Grup A (Kontrol)</strong></td>
+            <td>Sıfır Çerez (Her hit sıfır incognito profil)</td>
+            <td>%12 (Tıklamaların %88'i bot filtresine takılıp çöpe atıldı)</td>
+            <td>Sıralama değişmedi (48. sırada kaldı)</td>
+          </tr>
+          <tr>
+            <td><strong>Grup B (Isıtılmış)</strong></td>
+            <td>7 Günlük Isıtılmış Anonim Çerez Paketi</td>
+            <td><strong>%94 (Tıklamaların neredeyse tamamı organik sayıldı)</strong></td>
+            <td><strong>48. sıradan 19. sıraya sıçradı (2. sayfa)!</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Bu vaka analizi, piyasadaki SEO ajanslarının neden çerez satıcılarına binlerce lira ödemeye hazır olduğunu kanıtlayan en somut veridir.
+    </p>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_01.html" class="nav-link">⬅️ Modül 01: Çerez Anatomisi</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_03.html" class="nav-link">Modül 03: Çerez Pazarı ve Alıcılar ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 02 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

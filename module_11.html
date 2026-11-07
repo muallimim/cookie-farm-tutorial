@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 11: Proxy Stratejileri 1: Kotalı Residential vs. Sabit ISP</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_10.html" class="nav-link">⬅️ Modül 10: Linux'ta Windows Simülasyonu</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_12.html" class="nav-link">Modül 12: Kendi 4G Modem Çiftliğimiz ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part5">BÖLÜM V: PROXY DEVRİMİ (AĞ STRATEJİLERİ)</span>
+      <h1>Modül 11: Proxy Stratejileri 1: Kotalı Residential vs. Sabit ISP</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        GB başına faturalandırılan konut proxy'lerinin maliyet tuzağı, sınırsız bant genişlikli sabit port ISP proxy mimarisi ve ASN güven skorları.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Kotalı Proxy Tuzağı: Matematik Neden Yalan Söylemez?</h2>
+    <p>
+      Piyasada BrightData, Oxylabs, Smartproxy veya yerel sağlayıcılar (Sağlam Proxy vb.) residential (konut) proxy satarken <strong>GB başına</strong> ücret alır.
+    </p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">💸 Çerez Ticaretinde Kotalı Proxy İflas Hesabı</div>
+      <ul>
+        <li>1 GB Konut Proxy Fiyatı: <strong>3.00$</strong> (Dolar 50 TL iken = <strong>150 TL</strong>).</li>
+        <li>Medya engellemesi olmadan 1 profilin 8 siteyi gezmesi: <strong>~25 MB</strong>.</li>
+        <li>1 GB (1.024 MB) kotadan kaç profil çıkar? -> <code>1024 / 25 = 40 profil</code>.</li>
+        <li><strong>Profil Başına Sadece Proxy Maliyeti:</strong> <code>150 TL / 40 = 3.75 TL!</code></li>
+      </ul>
+      <p style="margin-top: 0.8rem; margin-bottom: 0;">
+        Eğer bir profili üretmek size <strong>3.75 TL</strong>'ye mal oluyorsa, piyasada <strong>0.50 TL (1 Cent)</strong> fiyata toptan çerez satamazsınız! Kotalı proxy ile bu işi yapmaya kalkan herkes zarar eder ve sistemi kapatır.
+      </p>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Çözüm: Sınırsız Bant Genişlikli (Unlimited Bandwidth) ISP Proxy'ler</h2>
+    <p>
+      Piyasada GB başına değil, <strong>sabit port başına aylık kiralama</strong> yapan kurumsal sağlayıcılar vardır (Örn. IPRoyal, Rayobyte, Webshare, Proxy-Seller).
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⚖️ KOTALI RESIDENTIAL VS. SINIRSIZ ISP PROXY MODELİ</div>
+      <div class="ascii-art">
+[KOTALI MODEL]:
+1 GB Kullanırsın   ──> 150 TL Ödersin
+10 GB Kullanırsın  ──> 1.500 TL Ödersin
+100 GB Kullanırsın ──> 15.000 TL Ödersin! (Batış Garantili!)
+
+════════════════════════════════════════════════════════════════
+
+[SINIRSIZ ISP PORT MODELİ]:
+10 Port Kirala  ──> Aylık Sabit: 25$ (1.250 TL)
+100 GB Tüket    ──> Aylık Sabit: 1.250 TL (Ek ücret YOK!)
+1.000 GB Tüket  ──> Aylık Sabit: 1.250 TL (Ek ücret YOK!)
+Sonuç: 50.000 profilde maliyet profil başı 0.02 TL'ye düşer!
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <h2>3. ASN İtibarı: Datacenter vs. ISP vs. Residential</h2>
+    <p>
+      Google ve Cloudflare, bağlanan her IP adresinin <strong>ASN (Autonomous System Number)</strong> kaydını sorgular (MaxMind / IPinfo veritabanları):
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>IP Sınıfı</th>
+            <th>Örnek Sağlayıcı</th>
+            <th>Google Güven Skoru</th>
+            <th>Çerez Çiftliğinde Kullanım Alanı</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Datacenter (Sunucu IP)</strong></td>
+            <td>Hetzner, OVH, DigitalOcean</td>
+            <td>Çok Düşük (0.1 - 0.3)</td>
+            <td>Doğrudan Google'a gidilmez! Yalnızca ara siteleri (Vikipedi, haberler) hızlıca taramak için kullanılır.</td>
+          </tr>
+          <tr>
+            <td><strong>Static ISP (Sabit Hat)</strong></td>
+            <td>Turknet, Superonline Statik</td>
+            <td><strong>Yüksek (0.7 - 0.85)</strong></td>
+            <td><strong>Sınırsız port kiralayarak 7/24 kesintisiz profil üretmek için idealdir.</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Residential (Ev İnterneti)</strong></td>
+            <td>Türk Telekom ADSL/Fiber</td>
+            <td><strong>Çok Yüksek (0.85 - 0.95)</strong></td>
+            <td>Kotalıysa sadece medya filtresiyle kullanılır.</td>
+          </tr>
+          <tr>
+            <td><strong>Mobile 4G/5G (Hücresel)</strong></td>
+            <td>Turkcell, Vodafone 4G</td>
+            <td><strong>Kusursuz (0.95 - 1.0)</strong></td>
+            <td><strong>Dünyanın en güvenilir IP sınıfıdır. Asla CAPTCHA patlamaz!</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Proxy Sağlık Kontrolü (Health-Check Daemon)</h2>
+    <p>
+      Çerez çiftliğiniz çalışırken ölü veya düşmüş bir proxy yüzünden worker'ların takılmaması için arka planda çalışan Python sağlık kontrolcüsü:
+    </p>
+
+    <pre><code>import asyncio
+import httpx
+import time
+
+async def check_proxy_health(proxy_url: str) -> dict:
+    """Proxy'nin çalışıp çalışmadığını, IP'sini ve gecikme süresini test eder."""
+    start = time.time()
+    try:
+        async with httpx.AsyncClient(proxies=proxy_url, timeout=5.0) as client:
+            resp = await client.get("https://api.ipify.org?format=json")
+            latency_ms = int((time.time() - start) * 1000)
+            if resp.status_code == 200:
+                ip = resp.json().get("ip")
+                return {"healthy": True, "ip": ip, "latency_ms": latency_ms}
+    except Exception as e:
+        return {"healthy": False, "error": str(e), "latency_ms": None}
+
+    return {"healthy": False, "error": "Unknown", "latency_ms": None}
+<span class="code-badge">PYTHON 3.12 / ASYNCIO</span></code></pre>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_10.html" class="nav-link">⬅️ Modül 10: Linux'ta Windows Simülasyonu</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_12.html" class="nav-link">Modül 12: Kendi 4G Modem Çiftliğimiz ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 11 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

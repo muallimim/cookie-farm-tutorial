@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 08: Ağ Seviyesinde Parmak İzi: TLS / JA3 / JA4 ve HTTP/2 SETTINGS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_07.html" class="nav-link">⬅️ Modül 07: Dijital Parmak İzi Uyumu</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_09.html" class="nav-link">Modül 09: Oracle Cloud Donanımı ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part3">BÖLÜM III: DİJİTAL PARMAK İZİ VE AĞ KATMANI</span>
+      <h1>Modül 08: Ağ Seviyesinde Parmak İzi: TLS / JA3 / JA4 ve HTTP/2 SETTINGS</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Python OpenSSL kütüphanesinin JA3 sızıntısı, TLS Handshake ve Cipher Suites sıralaması, HTTP/2 SETTINGS çerçeveleri ve curl_cffi / Go tls-client ile tam Chrome taklidi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Neden Standart Python `requests` veya `httpx` Anında Banlanır?</h2>
+    <p>
+      Birçok geliştirici Python'da `requests.get("https://google.com", headers={"User-Agent": "Mozilla/5.0..."})` yazar ve User-Agent başlığını Chrome yaptığı için Google'ı kandırdığını düşünür. Oysa sunucu daha HTTP başlıklarını okumadan önce <strong>TCP ve TLS seviyesinde</strong> şu anonsu duyar:
+    </p>
+    <p style="text-align: center; font-size: 1.35rem; color: #fb7185; font-weight: 700; margin: 1.5rem 0;">
+      "DİKKAT: Ben Google Chrome değilim, ben Linux OpenSSL kütüphanesi kullanan bir Python betiğiyim!"
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🔍 İKİ AYRI İSTEMCİNİN TLS CLIENT HELLO İMZASI (JA3 PARMAK İZİ)</div>
+      <div class="ascii-art">
+[Standart Python requests / httpx]:
+TLS Versiyonu: TLS 1.3, TLS 1.2
+Cipher Suites: 17 standart OpenSSL şifresi
+Extensions   : Python OpenSSL sıralaması
+JA3 Hash     : MD5: 9a78... (KARA LİSTEDE! ANINDA BLOK!)
+
+════════════════════════════════════════════════════════════════
+
+[Gerçek Google Chrome 131 Desktop]:
+TLS Versiyonu: GREASE, TLS 1.3, TLS 1.2
+Cipher Suites: Chrome özel şifre dizilimi (GREASE, CHACHA20)
+Extensions   : GREASE, server_name, renegotiation...
+ALPN         : h2, http/1.1
+JA3 Hash     : MD5: b323... (BEYAZ LİSTEDE! TAM GEÇİŞ İZNİ!)
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. JA3 ve JA4 Parmak İzi Nedir?</h2>
+    <p>
+      Cloudflare, Google ve Akamai gibi devler, gelen her HTTPS isteğinin <strong>Client Hello</strong> paketindeki 5 temel parametreyi virgülle birleştirip MD5 hash'ini çıkarır. Bu hash'e <strong>JA3</strong> (veya yeni nesil <strong>JA4</strong>) denir:
+    </p>
+    <ol>
+      <li>TLS Versiyonu (Örn: `771` -> TLS 1.2, `772` -> TLS 1.3).</li>
+      <li>Desteklenen Şifre Süitleri (Cipher Suites listesi).</li>
+      <li>Uzantı Listesi (Extensions listesi).</li>
+      <li>Eliptik Eğri Algoritmaları (Elliptic Curves).</li>
+      <li>Eliptik Eğri Nokta Formatları (Point Formats).</li>
+    </ol>
+    <p>
+      Eğer sizin HTTP başlığınızda <em>"Ben Windows 11 Chrome'um"</em> yazıyor ama JA3 hash'iniz <em>Python OpenSSL</em> çıkıyorsa; anti-bot sistemi 1 milisaniye içinde bağlantıyı koparır veya 403 Forbidden döner.
+    </p>
+
+    <!-- Section 3 -->
+    <h2>3. HTTP/2 SETTINGS ve Akış (Stream) Parmak İzi</h2>
+    <p>
+      TLS aşamasını geçseniz bile ikinci bir tuzak vardır: <strong>HTTP/2 Protokol Çerçeveleri (Frames)</strong>.
+    </p>
+    <p>
+      Google Chrome bir sunucuya bağlandığında ilk gönderdiği HTTP/2 SETTINGS çerçevesi sabit parametreler içerir:
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>HTTP/2 SETTINGS Parametresi</th>
+            <th>Gerçek Chrome 131 Değeri</th>
+            <th>Standart Python httpx Değeri</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>HEADER_TABLE_SIZE</code></td>
+            <td>65536</td>
+            <td>4096</td>
+          </tr>
+          <tr>
+            <td><code>ENABLE_PUSH</code></td>
+            <td>0</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>MAX_CONCURRENT_STREAMS</code></td>
+            <td>(Gönderilmez / Varsayılan)</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><code>INITIAL_WINDOW_SIZE</code></td>
+            <td>6291456 (6 MB)</td>
+            <td>65535 (64 KB)</td>
+          </tr>
+          <tr>
+            <td><code>MAX_HEADER_LIST_SIZE</code></td>
+            <td>262144 (256 KB)</td>
+            <td>(Gönderilmez)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 4 -->
+    <h2>4. Çözüm: `curl_cffi` ve Go `tls-client` ile Tam Taklit</h2>
+    <p>
+      Çerez çiftliğimizde çerezleri hızlıca toplamak için ağır Playwright yerine hafif HTTP istekleri kullanacağımız zaman, standart `requests` yerine <strong>BoringSSL motoru kullanan özel kütüphaneler</strong> devreye girer:
+    </p>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🚀 Python Çözümü: curl_cffi ile Chrome 120/130 İmpersonation</div>
+      <pre><code>from curl_cffi import requests
+
+# impersonate="chrome124" veya "chrome130" parametresi:
+# 1. TLS Handshake paketini Chrome ile bit'i bit'ine aynı yapar.
+# 2. HTTP/2 SETTINGS çerçevelerini Chrome standartlarında gönderir.
+# 3. JA3 ve JA4 hash'i gerçek Chrome ile %100 eşleşir!
+
+session = requests.Session(impersonate="chrome124")
+response = session.get(
+    "https://www.google.com/search?q=hitbot+test",
+    proxies={"https": "http://user:pass@proxy:port"}
+)
+
+print("Durum Kodu:", response.status_code) # 200 OK!
+print("Gelen Çerezler:", session.cookies.get_dict())
+<span class="code-badge">PYTHON 3.12 / CURL_CFFI</span></code></pre>
+    </div>
+
+    <p>
+      Bu teknik sayesinde, saniyede yüzlerce web sitesini sanki gerçek bir Google Chrome açılmış gibi tarayabilir, çerezleri toplayabilir ve sunucuya neredeyse sıfır CPU yükü bindirebiliriz.
+    </p>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_07.html" class="nav-link">⬅️ Modül 07: Dijital Parmak İzi Uyumu</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_09.html" class="nav-link">Modül 09: Oracle Cloud Donanımı ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 08 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

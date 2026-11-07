@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 03: Çerez Pazarı ve Alıcı Profilleri (Kim, Neden Satın Alıyor?)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_02.html" class="nav-link">⬅️ Modül 02: Arama Motorlarında Çerezler</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_04.html" class="nav-link">Modül 04: Google Ekosistemi Çerezleri ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part1">BÖLÜM I: TEMELLER VE PROTOKOLLER</span>
+      <h1>Modül 03: Çerez Pazarı ve Alıcı Profilleri (Kim, Neden Satın Alıyor?)</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        Hedef kitlenin segmentasyonu, SEO ajanslarından AdSense arbitrajcılarına, e-ticaret botçularından scraping ajanslarına kadar çerez talebini besleyen 5 ana sektörün analizi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. Çerez Pazarının Temel Dinamiği: Sürekli Tüketim (Consumable Commodity)</h2>
+    <p>
+      Bir yazılım lisansı sattığınızda müşteri o ürünü genellikle bir kez satın alır ve uzun süre kullanır. Ancak <strong>çerez satışı tıpkı un, kahve veya benzin satışı gibidir</strong>.
+    </p>
+    <p>
+      Bir bot işletmecisi günde 2.000 organik hit atıyorsa, her görev için taze bir profil harcar. Günün sonunda o 2.000 çerez tükenir, soğumaya alınır veya eskir. Ertesi sabah botun çalışması için <strong>yeni bir 2.000 adetlik çerez paketi</strong> satın almak zorundadır!
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">🔄 ÇEREZ TÜKETİM VE SÜREKLİ SATIŞ DÖNGÜSÜ</div>
+      <div class="ascii-art">
++---------------------+      Satın Alma       +----------------------+
+|  Çerez Üreticisi    | ────────────────────> |   SEO / Bot Müşterisi|
+|  (Bizim Çiftlik)    |                       |   (Günde 1.000+ Hit) |
++---------------------+                       +----------------------+
+          ^                                              │
+          │                                              │ Bot Görevleri
+          │ Yeniden Sipariş (Haftalık/Aylık Abonelik)    ▼ Başlatılır
+          └─────────────────────────────────── [Çerezler Tüketilir]
+                                                         │
+                                                         ▼
+                                              [Ertesi Gün Stok Biter!]
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <h2>2. Beş Ana Müşteri Segmenti ve Satın Alma Güdüleri</h2>
+
+    <h3>1. Segment: SEO Ajansları ve Organik Hit Botu Sahipleri (%45 Pazar Payı)</h3>
+    <p>
+      Piyasadaki en büyük ve en düzenli alıcı kitlesidir. Müşterilerinin web sitelerini Google'da ilk sayfaya taşımak için rank-tracking ve organik CTR botları çalıştırırlar.
+    </p>
+    <ul>
+      <li><strong>Satın Alma Nedeni:</strong> Sıfır profillerle atılan hitler Google algoritmaları tarafından engellenir veya cezalandırılır.</li>
+      <li><strong>Tüketim Hacmi:</strong> Orta ölçekli bir ajans günde <strong>1.000 – 5.000 adet</strong> çerez tüketir.</li>
+      <li><strong>Kabul Ettikleri Fiyat:</strong> Toptan alımlarda adet başı 0.50 TL – 1.50 TL arasını seve seve öderler (Ayda 15.000 TL – 50.000 TL bütçe).</li>
+    </ul>
+
+    <h3>2. Segment: AdSense ve Reklam Arbitrajcıları (%20 Pazar Payı)</h3>
+    <p>
+      Arbitrajcılar, düşük maliyetle sitelerine trafik çekip yüksek Tıklama Başına Gelir (TBM / CPC) elde etmeyi hedeflerler.
+    </p>
+    <ul>
+      <li><strong>Satın Alma Nedeni:</strong> Boş bir tarayıcı bir haber sitesine girdiğinde Google Ads o kullanıcıya 50 kuruşluk sıradan bir reklam gösterir. Ancak tarayıcı daha önce BtcTurk, Kredi Karşılaştırma veya Sigorta sitelerinde gezmişse, Google o kullanıcıyı <strong>"Yüksek Gelirli Finans Ziyaretçisi"</strong> olarak etiketler ve 50 TL'lik finans reklamı gösterir!</li>
+      <li><strong>Talep:</strong> "Finans / Kripto Kasılmış Özel Çerezler" isterler. Normal çerezin 2-3 katı fiyat öderler.</li>
+    </ul>
+
+    <h3>3. Segment: Çoklu Hesap (Multi-Accounting) ve Sosyal Medya Botçuları (%15 Pazar Payı)</h3>
+    <p>
+      Twitter/X, Reddit, Instagram, Telegram veya Discord üzerinde yüzlerce hesap açıp yöneten dijital pazarlamacılardır.
+    </p>
+    <ul>
+      <li><strong>Satın Alma Nedeni:</strong> Sıfır bir tarayıcıyla açılan yeni sosyal medya hesapları 24 saat içinde "Shadowban" yer veya telefon doğrulamasına takılır. 1 haftalık organik çerez yüklü tarayıcıyla açılan hesaplar ise güvenli kabul edilir.</li>
+      <li><strong>Talep Formatı:</strong> Çerezleri doğrudan <em>Dolphin{anty}</em> veya <em>AdsPower</em> antidetect tarayıcılarına aktarırlar.</li>
+    </ul>
+
+    <h3>4. Segment: E-Ticaret, Stok ve Fiyat Takipçileri (%10 Pazar Payı)</h3>
+    <p>
+      Amazon, Trendyol, Hepsiburada gibi sitelerde fiyat indirimi veya flaş stok kovalayan sniper bot yazılımcılarıdır.
+    </p>
+    <ul>
+      <li><strong>Satın Alma Nedeni:</strong> E-ticaret devleri Cloudflare ve DataDome kalkanları kullanır. Çerezsiz botlar saniyede bloklanırken, önceden bu siteleri gezmiş profiller sepet işlemlerini sorunsuz tamamlar.</li>
+    </ul>
+
+    <h3>5. Segment: Web Scraping ve Veri Madenciliği Şirketleri (%10 Pazar Payı)</h3>
+    <p>
+      İlan siteleri, emlak portalları ve uçak bileti sitelerinden büyük ölçekli veri çeken kurumsal şirketlerdir.
+    </p>
+    <ul>
+      <li><strong>Satın Alma Nedeni:</strong> 10.000 sayfayı kazırken IP bloklamasını ve JavaScript güvenlik duvarlarını aşmak için geniş çerez havuzuna ihtiyaç duyarlar.</li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. Fiyat Elastikiyeti ve Pazar Hacmi Karşılaştırması</h2>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Müşteri Segmenti</th>
+            <th>Aylık Tüketim Potansiyeli</th>
+            <th>En Çok Tercih Ettiği Format</th>
+            <th>Hassasiyet Gösterdiği Nokta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SEO / Hit Botları</strong></td>
+            <td>30.000 – 150.000 adet</td>
+            <td>JSON / Netscape txt</td>
+            <td>Google Trust Skoru ve Fiyat ucuzluğu</td>
+          </tr>
+          <tr>
+            <td><strong>AdSense Arbitrajı</strong></td>
+            <td>10.000 – 30.000 adet</td>
+            <td>JSON (Playwright / BAS)</td>
+            <td>Gezilen sitelerin sektörel niteliği (TBM değeri)</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-Accounting</strong></td>
+            <td>5.000 – 15.000 adet</td>
+            <td>Dolphin / AdsPower JSON</td>
+            <td>Parmak izi (User-Agent, Canvas) tutarlılığı</td>
+          </tr>
+          <tr>
+            <td><strong>Scraping / Crawling</strong></td>
+            <td>50.000 – 200.000 adet</td>
+            <td>cURL cookies.txt / JSON</td>
+            <td>Hızlı API teslimatı ve yüksek hacim indirimi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-title">💰 0.50 TL (1 Cent) Fiyatının Pazardaki Deprem Etkisi</div>
+      <p>
+        Mevcut piyasada hiçbir satıcı 1.50 TL'nin altına inememektedir çünkü geleneksel yöntemlerle çerez kasanlar pahalı sunucular ve kotalı proxy'ler kullanmaktadır. 
+        Biz <strong>Oracle Free Tier (0 TL)</strong> ve <strong>Sınırsız 4G Modem (Sabit Maliyet)</strong> altyapımızla 0.50 TL'ye indiğimizde, yukarıda sayılan 5 müşteri grubunun tamamı için <strong>alternatifsiz tek toptan tedarikçi</strong> konumuna yükseliriz.
+      </p>
+    </div>
+
+    <!-- Section 4: Added Based on Strategic Discussion -->
+    <h2>4. Hazır HitBot Altyapısını Nakde Dönüştürmenin 4 Düşük Kodlu Yolu</h2>
+    <p>
+      Bir geliştirici için en büyük tuzak, <strong>elinde çalışan devasa bir altyapı varken</strong> onu kenara bırakıp aylar sürecek sıfırdan projeler (karmaşık B2B SaaS'lar, oyun sunucuları, API platformları) kodlamaya kalkışmaktır. Bu projeler aylar süren kodlama, arayüz tasarımı, müşteri desteği ve hata ayıklama gerektirir.
+    </p>
+    <p>
+      Oysa <strong>yazılmış, test edilmiş ve çalışan kod en değerli sermayedir.</strong> HitBot halihazırda bu işin en zorlu <strong>%85'lik mühendislik kısmını</strong> çözmüştür:
+    </p>
+    <ul>
+      <li>Tarayıcıyı ayağa kaldırma, Playwright/Chromium süreçlerini yönetme,</li>
+      <li>Gelişmiş <em>Stealth</em> enjeksiyonları ile tarayıcıyı gizleme,</li>
+      <li>İnsan benzeri rastgele gezinmeler, kaydırma (scroll) hareketleri ve bekleme süreleri,</li>
+      <li>Proxy tünelleme, IP rotasyonu ve oturum belleğini canlı tutma.</li>
+    </ul>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⚡ HAZIR HİTBOT MOTORUNUN ÇOKLU GELİR DÖNÜŞÜMÜ</div>
+      <div class="ascii-art">
+             ┌────────────────────────────────────────┐
+             │         MEVCUT HİTBOT MOTORU           │
+             │ (Playwright + Stealth + Proxy + Human) │
+             └───────────────────┬────────────────────┘
+                                 │
+         ┌───────────────────────┴───────────────────────┐
+         ▼                                               ▼
+[1. DÜZ ÇEREZ SATIŞI]                   [2. DOLPHIN / ADSPOWER PROFİL]
+* 3 satır json.dump ile toptan          * User-Agent & ekran meta ekleme
+* 0.50 TL / adet (Hızlı nakit)          * 2.50 TL / adet (Yüksek kâr)
+         │                                               │
+         ├───────────────────────────────────────────────┤
+         ▼                                               ▼
+[3. ORGANİK HİT HİZMETİ]                [4. NİŞ SEPET ÇEREZLERİ]
+* Kendi çerezimizle arama trafiği       * Sadece URL listesi değişir
+* 1.000 hit = 30 TL – 60 TL             * 1.00 TL – 1.50 TL / adet
+      </div>
+    </div>
+
+    <h3>Model 1: Saf HitBot Çıktısını Toptan Çerez Olarak Satmak (Sıfır Yeni Kod)</h3>
+    <p>
+      HitBot zaten hedef siteleri gezerken tarayıcı hafızasında (<code>BrowserContext</code>) onlarca Google, haber ve reklam çerezi biriktirir. Görev tamamlandığında profili çöpe atmak yerine sadece 3 satırlık bir kayıt koduyla diske yazmak yeterlidir:
+    </p>
+
+    <pre><code># HitBot görev bitiş döngüsüne eklenecek sadece 3 satır kod:
+cookies = await context.cookies()
+with open(f"output/cerez_{profile_id}.json", "w", encoding="utf-8") as f:
+    json.dump(cookies, f, ensure_ascii=False, indent=2)
+<span class="code-badge">HİTBOT EXPORT ENJEKSİYONU</span></code></pre>
+    <p>
+      Oracle makinesinde HitBot günde 5.000 profil gezdiğinde, akşam elinizde 5.000 adet taze <code>.json</code> çerezi hazır olur. Klasörü ZIP'leyip R10 veya Shopier'de toptan 0.50 TL'den satarsınız. <strong>Ek kodlama ihtiyacı: YOK.</strong>
+    </p>
+
+    <h3>Model 2: Anti-Detect Tarayıcılar İçin Hazır Profil Şablonu Satışı (Minimum Efor)</h3>
+    <p>
+      Piyasada <em>Dolphin{anty}</em>, <em>AdsPower</em> veya <em>GoLogin</em> kullanan binlerce dijital pazarlamacı ve medya alıcısı (media buyer) vardır. Bu kişilerin en büyük zaman kaybı, yüzlerce boş profili tek tek açıp içlerini ısıtmaktır.
+    </p>
+    <ul>
+      <li><strong>Farkı Ne?</strong> Çerez dosyasının içine sadece HitBot'un o an kullandığı <code>User-Agent</code>, işletim sistemi ve ekran çözünürlüğü değerlerini ekleyerek (Modül 16 standartlarında) tek bir profil JSON'ı oluşturursunuz.</li>
+      <li><strong>Fiyat Gücü:</strong> Düz çerez 0.50 TL iken, <em>"Dolphin{anty} Uyumlu Isınmış Hazır Profil"</em> başlığıyla tanesini <strong>2.00 TL – 3.00 TL</strong>'ye satabilirsiniz. Altyapı yine aynı HitBot motorudur.</li>
+    </ul>
+
+    <h3>Model 3: "Isıtılmış / Çerezli Organik Hit" Hizmeti Satmak (Zaten HitBot'un Kendi İşi!)</h3>
+    <p>
+      Çerezleri dosya olarak satmak yerine, HitBot'un ürettiği o çerezleri doğrudan <strong>kendi HitBot görevlerinizde kullanarak</strong> R10 ve Bionluk üzerinde <em>"Organik Google Arama Trafiği"</em> satışı yapabilirsiniz.
+    </p>
+    <ul>
+      <li><strong>Piyasadaki Rakipleriniz:</strong> R10'da hit satanların %95'i boş, çerezsiz tarayıcılarla veya kirli datacenter IP'leriyle hit atar. Google Analytics 4 bu hitleri anında <em>"Bot / Geçersiz Trafik"</em> olarak filtreler ve web sitesinin AdSense hesabının banlanmasına yol açar.</li>
+      <li><strong>Sizin Satış Avantajınız:</strong> <em>"Hitlerimiz 3 günlük çerez geçmişine sahip, haber ve video sitelerinde ısınmış güvenli profillerle gönderilir. GA4'te %100 gerçek kullanıcı olarak görünür, AdSense ban riski sıfırdır."</em></li>
+      <li><strong>Fiyatlandırma:</strong> 1.000 adet organik hit piyasada <strong>30 TL – 60 TL</strong> bandındadır. Günde 5.000 hit teslimatı = <strong>günde 150 TL – 300 TL (aylık 4.500 TL – 9.000 TL)</strong> net kazanç demektir.</li>
+    </ul>
+
+    <h3>Model 4: Niş E-Ticaret ve Sepet Çerez Paketleri (Sadece URL Listesi Değişir)</h3>
+    <p>
+      Bu modelde de tek bir satır Python kodu yazmazsınız. HitBot'un gezeceği hedef URL listesine (<code>urls.txt</code>) haber siteleri yerine e-ticaret devlerini eklersiniz:
+    </p>
+    <ul>
+      <li><code>trendyol.com</code>, <code>hepsiburada.com</code>, <code>amazon.com.tr</code>, <code>n11.com</code></li>
+    </ul>
+    <p>
+      HitBot buralara girip rastgele 2-3 ürün sayfasına tıklar ve sepet butonunu tetikler. Tarayıcıya Criteo, RTB House ve Google Ads dinamik yeniden pazarlama (retargeting) pikselleri yapışır. Reklam arbitrajcıları ve dropshipping botçuları bu hazır sepet çerezlerini <strong>normal çerezin 2-3 katı fiyata (1.00 TL – 1.50 TL)</strong> anında satın alır.
+    </p>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>İş Modeli</th>
+            <th>Ek Kodlama İhtiyacı</th>
+            <th>Kullanılan Altyapı</th>
+            <th>Piyasaya Çıkış Süresi</th>
+            <th>Tahmini Birim Gelir</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Düz Toptan Çerez Satışı</strong></td>
+            <td>0 Satır (Sadece `json.dump`)</td>
+            <td>Mevcut HitBot</td>
+            <td><strong>1 Gün</strong></td>
+            <td>0.50 TL / adet</td>
+          </tr>
+          <tr>
+            <td><strong>Dolphin / AdsPower Profil Satışı</strong></td>
+            <td>~10 Satır JSON meta formatlama</td>
+            <td>Mevcut HitBot</td>
+            <td><strong>1 Gün</strong></td>
+            <td>2.00 TL – 3.00 TL / adet</td>
+          </tr>
+          <tr>
+            <td><strong>Organik Güvenli Hit Satışı</strong></td>
+            <td>Sıfır (HitBot'un ana görevi)</td>
+            <td>Mevcut HitBot</td>
+            <td><strong>Hemen</strong></td>
+            <td>1.000 hit = 30 TL – 60 TL</td>
+          </tr>
+          <tr>
+            <td><strong>E-Ticaret / Sepet Çerez Satışı</strong></td>
+            <td>Sadece URL listesini güncelleme</td>
+            <td>Mevcut HitBot</td>
+            <td><strong>1 Gün</strong></td>
+            <td>1.00 TL – 1.50 TL / adet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-title">🎯 STRATEJİK SONUÇ</div>
+      <p>
+        Sıfırdan aylar sürecek bir SaaS, karmaşık bir web scraping API'si veya oyun sunucusu geliştirmek yerine; <strong>zaten elinizde çalışan HitBot motorunu Oracle sunucusuna kurup yukarıdaki 4 modelden biriyle (veya hepsiyle) hemen yarın nakit akışı başlatmak</strong> ticari açıdan en rasyonel, en az eforlu ve en kârlı yoldur.
+      </p>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_02.html" class="nav-link">⬅️ Modül 02: Arama Motorlarında Çerezler</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_04.html" class="nav-link">Modül 04: Google Ekosistemi Çerezleri ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 03 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+

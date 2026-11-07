@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modül 13: Proxy Stratejileri 3: IPv6 Havuzları ile Neredeyse Sıfır Maliyet</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="module_12.html" class="nav-link">⬅️ Modül 12: Kendi 4G Modem Çiftliğimiz</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_14.html" class="nav-link">Modül 14: Ağ Trafiği Optimizasyonu ➡️</a>
+    </nav>
+
+    <!-- Header -->
+    <header>
+      <span class="module-tag tag-part5">BÖLÜM V: PROXY DEVRİMİ (AĞ STRATEJİLERİ)</span>
+      <h1>Modül 13: Proxy Stratejileri 3: IPv6 Havuzları ile Neredeyse Sıfır Maliyet</h1>
+      <p style="font-size: 1.25rem; color: #94a3b8;">
+        /64 alt ağında 18 kentilyon benzersiz IP adresi, Linux ip route ile dinamik IPv6 rotasyonu ve hibrit ön ısıtma mimarisi.
+      </p>
+    </header>
+
+    <!-- Section 1 -->
+    <h2>1. IPv6 Dünyasının Devasa Boyutu: 18 Kentilyon IP</h2>
+    <p>
+      IPv4 adresleri dünyada bittiği için 1 adet IPv4 kiralamak ayda 2$ – 4$'dır. Oysa yeni nesil <strong>IPv6</strong> protokolünde adres havuzu neredeyse sonsuzdur.
+    </p>
+    <p>
+      Piyasada bir veri merkezinden veya hosting firmasından standart bir <strong>/64 IPv6 alt ağı</strong> kiraladığınızda (aylık ücreti yalnızca <strong>5$ – 15$</strong>), tam olarak:
+    </p>
+    <p style="text-align: center; font-size: 1.6rem; color: #38bdf8; font-weight: 800; margin: 1.5rem 0;">
+      18,446,744,073,709,551,616 Adet Benzersiz IP Adresi Alırsınız!
+    </p>
+
+    <!-- Section 2 -->
+    <h2>2. Google ve Büyük Sitelerin IPv6 Uyumluluğu</h2>
+    <p>
+      Çerez çiftliğimiz için harika haber şudur: Dünyada IPv6'yı ilk ve en kusursuz destekleyen şirket <strong>Google</strong>'dır!
+    </p>
+    <ul>
+      <li><code>google.com</code>, <code>google.com.tr</code>, <code>youtube.com</code>, <code>news.google.com</code> %100 IPv6 destekler.</li>
+      <li><code>wikipedia.org</code>, <code>facebook.com</code>, <code>instagram.com</code> %100 IPv6 destekler.</li>
+      <li>Cloudflare korumalı web sitelerinin tamamı varsayılan olarak IPv6 üzerinden erişilebilir.</li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>3. Linux Sunucuda Her İstekte Yeni IPv6 Kullanma (Rotasyon)</h2>
+    <p>
+      Linux çekirdeğinin gelişmiş yönlendirme tablosu sayesinde, kiraladığınız /64 bloğu içinden <strong>her giden istek için rastgele yeni bir IPv6 adresi</strong> üretip çıkabilirsiniz:
+    </p>
+
+    <pre><code># Linux üzerinde dinamik IPv6 yönlendirmesini aktif et:
+sudo ip route add local 2001:db8:1234:5678::/64 dev lo
+
+# Python ile her istekte havuzdan rastgele bir IP seçip bağlan:
+import random
+import ipaddress
+import requests
+
+SUBNET = ipaddress.IPv6Network("2001:db8:1234:5678::/64")
+
+def get_random_ipv6():
+    """/64 havuzundan rastgele bir IPv6 adresi türetir."""
+    rand_int = random.randint(0, SUBNET.num_addresses - 1)
+    return str(SUBNET[rand_int])
+
+# curl_cffi veya requests ile o IP'ye bind et:
+# session.get("https://google.com", source_address=(get_random_ipv6(), 0))
+<span class="code-badge">LINUX IPV6 ROTATION</span></code></pre>
+
+    <!-- Section 4 -->
+    <h2>4. IPv6'nın Sınırları ve "Hibrit" Çiftlik Mimarisi</h2>
+    <p>
+      IPv6 harikadır ancak Türkiye'deki bazı eski haber siteleri veya yerel e-ticaret siteleri henüz IPv6'ya geçmemiştir (yalnızca IPv4 desteklerler). Bu durumda en kusursuz mimari <strong>Hibrit Ağ Modeli</strong>'dir:
+    </p>
+
+    <div class="diagram-box">
+      <div class="diagram-title">⚡ HİBRİT AĞ VE AKILLI YÖNLENDİRME (SMART ROUTING)</div>
+      <div class="ascii-art">
+[ÇEREZ WORKER]:
+       │
+       ├─> (1) Google, YouTube, Wikipedia, Cloudflare
+       │       └──> [IPv6 /64 Havuzu] (MALİYET: 0 TL)
+       │
+       └─> (2) Yalnızca IPv4 Destekleyen Yerel Siteler
+               └──> [Evdeki 4G Dongle] (MALİYET: 0 TL)
+       │
+       ▼
+[SONUÇ]: Sıfır kota kısıtlaması, sınırsız IP ve %100 kapsama!
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="nav-bar" style="margin-top: 4rem;">
+      <a href="module_12.html" class="nav-link">⬅️ Modül 12: Kendi 4G Modem Çiftliğimiz</a>
+      <a href="index.html" class="nav-link nav-home">🏠 Fihriste Dön</a>
+      <a href="module_14.html" class="nav-link">Modül 14: Ağ Trafiği Optimizasyonu ➡️</a>
+    </nav>
+
+    <footer>
+      Endüstriyel Cookie Çiftliği & Ticareti Masterclass | Modül 13 | 2026-11-07
+    </footer>
+
+  </div>
+
+</body>
+</html>
+
